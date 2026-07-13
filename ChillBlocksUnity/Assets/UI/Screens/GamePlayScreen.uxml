@@ -1,0 +1,31 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/UI/Styles/Common.uss" />
+    <Style src="project://database/Assets/UI/Styles/GamePlayScreen.uss" />
+
+    <ui:VisualElement name="gameplay-screen" class="screen">
+        <ui:VisualElement class="hud-top">
+            <ui:Button name="btn-home" text="&#x25C0;" class="btn btn-secondary btn-icon" />
+            <ui:Label name="score-label" text="Score 0" class="hud-score" />
+            <ui:Label name="best-label" text="Best 0" class="hud-best" />
+        </ui:VisualElement>
+
+        <ui:VisualElement name="board-container" class="board-container" />
+
+        <ui:Label name="reaction-label" text="" class="reaction-label text-outline" style="display: none;" />
+
+        <ui:VisualElement name="tray-container" class="tray-container" />
+
+        <!-- Game Over overlay（GS4: Continueは3状態 Ready/Loading/Unavailable） -->
+        <ui:VisualElement name="gameover-panel" class="overlay-panel" style="display: none;">
+            <ui:VisualElement class="panel result-panel">
+                <ui:Label text="GAME OVER" class="result-title-gameover" />
+                <ui:Label name="gameover-score-label" text="" class="gameover-score" />
+                <ui:VisualElement class="result-buttons">
+                    <ui:Button name="btn-continue" text="Continue (Watch Ad)" class="btn btn-primary-size" />
+                    <ui:Button name="btn-retry" text="Retry" class="btn btn-primary-size btn-secondary" />
+                    <ui:Button name="btn-home-gameover" text="Home" class="btn btn-primary-size btn-secondary" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

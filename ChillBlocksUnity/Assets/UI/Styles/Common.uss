@@ -1,0 +1,190 @@
+/* Common.uss — ChillBlocks design tokens.
+   SortGemsのCommon.uss（ボタン/パネルのクラス構造）を土台に、色トークンだけ
+   design-spec.html GS5 / SortGemsの「Cozy Lo-Fi Pixel Palette」に retune。
+   フォントはSortGems固有のCaveat-Bold参照を外し、既定フォントにフォールバックさせている
+   （Lo-Fi向けフォントは別途ComfyUI/フォント選定時に差し替え）。 */
+
+:root {
+    /* ===== COLOR SYSTEM（Cozy Lo-Fi Pixel Palette）===== */
+    --color-bg:              rgb(40, 40, 69);    /* Night Navy #282845 */
+    --color-surface:         rgb(67, 57, 91);    /* Deep Purple #43395B */
+    --color-surface-high:    rgb(106, 84, 72);   /* Warm Brown #6A5448 */
+    --color-overlay:         rgba(22, 21, 42, 0.72);
+
+    --color-primary:         rgb(217, 135, 168); /* UI Button #D987A8 */
+    --color-primary-hover:   rgb(230, 155, 185);
+    --color-primary-active:  rgb(190, 110, 145);
+
+    --color-secondary:       rgba(255, 255, 255, 0.10);
+    --color-secondary-hover: rgba(255, 255, 255, 0.20);
+
+    --color-accent:          rgb(248, 233, 161); /* UI Accent #F8E9A1 */
+    --color-danger:          rgb(255, 125, 125); /* sem-danger */
+    --color-success:         rgb(255, 217, 138); /* sem-success（暖色系） */
+
+    --color-text:            rgb(241, 238, 251); /* ink #F1EEFB */
+    --color-text-dim:        rgb(183, 178, 214); /* ink-dim #B7B2D6 */
+    --color-text-on-primary: rgb(58, 34, 48);    /* #3A2230、ui-buttonの上の文字色 */
+
+    --color-bar-bg:          rgba(0, 0, 0, 0.50);
+    --color-bar-track:       rgba(255, 255, 255, 0.15);
+
+    /* ===== TYPOGRAPHY ===== */
+    --fs-display:  72px;
+    --fs-title:    48px;
+    --fs-h1:       40px;
+    --fs-h2:       32px;
+    --fs-h3:       28px;
+    --fs-body-lg:  24px;
+    --fs-body:     20px;
+    --fs-btn-lg:   40px;
+    --fs-btn-md:   26px;
+    --fs-btn-sm:   19px;
+    --fs-small:    16px;
+
+    /* ===== SPACING ===== */
+    --sp-xs:  4px;
+    --sp-sm:  8px;
+    --sp-md:  16px;
+    --sp-lg:  24px;
+    --sp-xl:  32px;
+    --sp-2xl: 48px;
+
+    /* ===== RADIUS ===== */
+    --radius-sm:    8px;
+    --radius-md:    12px;
+    --radius-lg:    16px;
+    --radius-round: 50%;
+}
+
+/* ===== BASE SCREEN ===== */
+.screen {
+    flex-grow: 1;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-bg);
+    -unity-font-style: bold;
+}
+
+/* ===== TEXT LEGIBILITY (labels floating directly over background art) ===== */
+.text-outline {
+    -unity-text-outline-width: 1px;
+    -unity-text-outline-color: rgba(22, 21, 42, 0.75);
+}
+
+/* Frosted-glass scrim for UI blocks sitting on top of background art */
+.scrim {
+    background-color: rgba(32, 31, 58, 0.78);
+    border-radius: var(--radius-lg);
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ===== BUTTON SYSTEM ===== */
+
+/* Base button */
+.btn {
+    color: var(--color-text-on-primary);
+    background-color: var(--color-primary);
+    border-width: 2px;
+    border-top-color: rgba(255, 255, 255, 0.35);
+    border-left-color: rgba(255, 255, 255, 0.22);
+    border-right-color: rgba(43, 30, 20, 0.35);
+    border-bottom-color: rgba(43, 30, 20, 0.45);
+    -unity-font-style: bold;
+    transition-duration: 0.15s;
+    /* Default: medium size */
+    font-size: var(--fs-btn-md);
+    padding: 16px 36px;
+    min-height: 58px;
+    border-radius: var(--radius-md);
+}
+
+.btn:hover {
+    background-color: var(--color-primary-hover);
+    scale: 1.03;
+}
+
+.btn:active {
+    background-color: var(--color-primary-active);
+    scale: 0.97;
+}
+
+.btn:disabled {
+    background-color: rgb(138, 138, 155); /* sem-disabled */
+    opacity: 0.7;
+}
+
+/* Large button (Play, Start, primary CTA) */
+.btn-lg {
+    font-size: var(--fs-btn-lg);
+    padding: 24px 56px;
+    min-height: 84px;
+    min-width: 280px;
+    border-width: 3px;
+}
+
+/* Small button */
+.btn-sm {
+    font-size: var(--fs-btn-sm);
+    padding: 10px 20px;
+    min-height: 46px;
+    border-radius: var(--radius-sm);
+}
+
+/* Icon button (back arrow, pause etc) */
+.btn-icon {
+    font-size: var(--fs-body-lg);
+    padding: 12px;
+    min-width: 56px;
+    min-height: 56px;
+    border-radius: var(--radius-sm);
+}
+
+/* Secondary style */
+.btn-secondary {
+    background-color: var(--color-secondary);
+    color: var(--color-text);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-secondary-hover);
+}
+
+/* ===== PANELS ===== */
+.panel {
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--sp-lg);
+    align-items: center;
+}
+
+/* ===== OVERLAY ===== */
+.overlay-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-overlay);
+}
+
+/* ===== PRIMARY CTA (bottom-docked, Title) ===== */
+.btn-cta {
+    position: absolute;
+    bottom: 360px;
+    left: 50%;
+    translate: -50% 0;
+    width: 560px;
+    font-size: 48px;
+}
+
+/* Shared button footprint — same size as Title's primary CTA.
+   Used by non-header buttons (e.g. Game Over panel buttons) that aren't bottom-docked. */
+.btn-primary-size {
+    width: 560px;
+    font-size: 48px;
+    min-height: 84px;
+}

@@ -1,0 +1,31 @@
+.title-content {
+    align-items: center;
+    margin-bottom: var(--sp-2xl);
+}
+
+.title-logo-main {
+    font-size: 96px;
+    color: var(--color-text);
+    -unity-font-style: bold;
+}
+
+.title-logo-sub {
+    font-size: 30px;
+    letter-spacing: 8px;
+    color: var(--color-text-dim);
+    margin-top: var(--sp-sm);
+}
+
+.best-score-label {
+    font-size: var(--fs-h3);
+    color: var(--color-accent);
+}
+
+.version-label {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    translate: -50% 0;
+    font-size: var(--fs-small);
+    color: var(--color-text-dim);
+}

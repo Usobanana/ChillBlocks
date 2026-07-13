@@ -1,0 +1,934 @@
+<meta charset="utf-8" />
+<title>ChillBlocks — Design &amp; Game Spec</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root {
+    --bg: #eef0f5;
+    --paper: #ffffff;
+    --ink: #1a1d27;
+    --ink-dim: #5b6072;
+    --line: #b7bdce;
+    --line-strong: #8a90a6;
+    --muted-fill: #e6e9f1;
+    --muted-fill-2: #dde1ec;
+    --accent: #3450e6;
+    --accent-soft: rgba(52, 80, 230, 0.07);
+    --accent-line: rgba(52, 80, 230, 0.55);
+    --success: #1f9d55;
+    --danger: #d1483f;
+    --gold: #b8811c;
+    --rail-bg: #14161f;
+    --rail-ink: #cfd3e6;
+    --rail-ink-dim: #7a7f97;
+    --shadow: 0 1px 2px rgba(20, 22, 35, 0.06), 0 8px 24px -12px rgba(20, 22, 35, 0.18);
+    color-scheme: light;
+  }
+  :root[data-theme="dark"] {
+    --bg: #14151b;
+    --paper: #1c1e28;
+    --ink: #e7e9f2;
+    --ink-dim: #9498ab;
+    --line: #3a3f52;
+    --line-strong: #565c76;
+    --muted-fill: #262a38;
+    --muted-fill-2: #2c3040;
+    --accent: #7c92ff;
+    --accent-soft: rgba(124, 146, 255, 0.10);
+    --accent-line: rgba(124, 146, 255, 0.55);
+    --success: #3fbf76;
+    --danger: #e2685f;
+    --gold: #d6a23f;
+    --rail-bg: #0d0e13;
+    --rail-ink: #d6d9ea;
+    --rail-ink-dim: #6a6f85;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px -12px rgba(0, 0, 0, 0.55);
+    color-scheme: dark;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #14151b;
+      --paper: #1c1e28;
+      --ink: #e7e9f2;
+      --ink-dim: #9498ab;
+      --line: #3a3f52;
+      --line-strong: #565c76;
+      --muted-fill: #262a38;
+      --muted-fill-2: #2c3040;
+      --accent: #7c92ff;
+      --accent-soft: rgba(124, 146, 255, 0.10);
+      --accent-line: rgba(124, 146, 255, 0.55);
+      --success: #3fbf76;
+      --danger: #e2685f;
+      --gold: #d6a23f;
+      --rail-bg: #0d0e13;
+      --rail-ink: #d6d9ea;
+      --rail-ink-dim: #6a6f85;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 28px -12px rgba(0, 0, 0, 0.55);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: ui-monospace, "SFMono-Regular", "Cascadia Mono", "Consolas", "Liberation Mono", monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    background-position: -1px -1px;
+    background-color: var(--bg);
+  }
+
+  .head {
+    font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+
+  a { color: inherit; }
+
+  .app {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    min-height: 100vh;
+  }
+  @media (max-width: 860px) {
+    .app { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Rail ---------- */
+  .rail {
+    background: var(--rail-bg);
+    color: var(--rail-ink);
+    padding: 28px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    min-height: 100vh;
+  }
+  @media (max-width: 860px) {
+    .rail { position: static; min-height: auto; }
+  }
+  .rail-brand {
+    font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+  }
+  .rail-brand .sheet-no {
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    color: var(--rail-ink-dim);
+    text-transform: uppercase;
+  }
+  .rail-brand h1 {
+    margin: 4px 0 0;
+    font-size: 19px;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .rail-brand p {
+    margin: 6px 0 0;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--rail-ink-dim);
+  }
+
+  .rail-nav {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .rail-nav .group-label {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--rail-ink-dim);
+    padding: 14px 10px 6px;
+  }
+  .rail-nav button {
+    all: unset;
+    cursor: pointer;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--rail-ink-dim);
+    border-left: 2px solid transparent;
+  }
+  .rail-nav button .tag {
+    font-size: 10px;
+    color: var(--rail-ink-dim);
+    min-width: 18px;
+  }
+  .rail-nav button:hover { background: rgba(255,255,255,0.05); color: var(--rail-ink); }
+  .rail-nav button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .rail-nav button[aria-current="true"] {
+    background: rgba(124, 146, 255, 0.12);
+    color: #fff;
+    border-left-color: var(--accent);
+  }
+  .rail-nav button[aria-current="true"] .tag { color: var(--accent); }
+
+  .rail-foot {
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255,255,255,0.08);
+  }
+  .theme-toggle {
+    all: unset;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--rail-ink-dim);
+    letter-spacing: 0.06em;
+    display: inline-flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .theme-toggle:hover { color: var(--rail-ink); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ---------- Main ---------- */
+  main {
+    padding: 36px 40px 80px;
+    max-width: 1180px;
+  }
+  @media (max-width: 860px) { main { padding: 24px 18px 60px; } }
+
+  .stage-head {
+    font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    margin-bottom: 26px;
+  }
+  .stage-head .eyebrow {
+    font-family: ui-monospace, monospace;
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .stage-head h2 {
+    margin: 6px 0 8px;
+    font-size: 26px;
+    font-weight: 700;
+    text-wrap: balance;
+  }
+  .stage-head p {
+    margin: 0;
+    max-width: 68ch;
+    font-family: ui-monospace, monospace;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--ink-dim);
+  }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin: 20px 0 30px;
+    font-size: 11.5px;
+    color: var(--ink-dim);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .swatch { width: 20px; height: 12px; border-radius: 2px; flex-shrink: 0; }
+  .swatch.static { background: var(--muted-fill-2); border: 1px solid var(--line-strong); }
+  .swatch.dynamic { background: var(--accent-soft); border: 1.5px dashed var(--accent-line); }
+  .swatch.tap { background: transparent; border: 1.5px solid var(--ink-dim); border-radius: 6px; }
+
+  .stage-body {
+    display: grid;
+    grid-template-columns: minmax(260px, 320px) 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+  @media (max-width: 760px) {
+    .stage-body { grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Phone frame ---------- */
+  .frame-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .frame {
+    position: relative;
+    width: 300px;
+    aspect-ratio: 1080 / 1920;
+    background: var(--paper);
+    border: 2px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .frame-caption {
+    font-size: 11px;
+    color: var(--ink-dim);
+    text-align: center;
+  }
+  .frame-caption b { color: var(--ink); font-weight: 600; }
+
+  .wf-box {
+    position: absolute;
+    border: 1.4px solid var(--line-strong);
+    background: var(--muted-fill);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2px;
+    overflow: hidden;
+  }
+  .wf-box.dynamic {
+    border: 1.4px dashed var(--accent-line);
+    background: var(--accent-soft);
+  }
+  .wf-box .lbl {
+    font-size: 8.5px;
+    line-height: 1.35;
+    color: var(--ink-dim);
+    letter-spacing: 0.01em;
+  }
+  .wf-box.emph .lbl { color: var(--ink); font-weight: 600; }
+
+  .wf-btn {
+    position: absolute;
+    border: 1.4px solid var(--ink);
+    border-radius: 5px;
+    background: var(--paper);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8.5px;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.01em;
+  }
+  .wf-btn.primary { background: var(--accent-soft); border-color: var(--accent-line); color: var(--accent); }
+  .wf-btn.circle { border-radius: 50%; }
+
+  .wf-grid {
+    position: absolute;
+    display: grid;
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1.4px dashed var(--accent-line);
+    padding: 3px;
+  }
+  .wf-cell { background: var(--paper); }
+  .wf-cell.filled { background: var(--accent-soft); }
+  .wf-cell.locked { background: repeating-linear-gradient(135deg, var(--muted-fill-2) 0 3px, var(--paper) 3px 6px); }
+
+  .wf-label-tag {
+    position: absolute;
+    font-size: 7.5px;
+    color: var(--accent);
+    background: var(--paper);
+    padding: 1px 4px;
+    border: 1px solid var(--accent-line);
+    border-radius: 3px;
+    line-height: 1.4;
+    z-index: 5;
+  }
+
+  .wf-overlay-scrim {
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(45deg, rgba(0,0,0,0.06) 0 2px, transparent 2px 8px);
+  }
+
+  .wf-modal {
+    position: absolute;
+    border: 1.6px solid var(--ink);
+    border-radius: 10px;
+    background: var(--paper);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 6px 8px;
+  }
+
+  /* ---------- Spec panel ---------- */
+  .spec {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+  }
+  .spec h3 {
+    font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    margin: 0;
+    padding: 14px 18px;
+    font-size: 13.5px;
+    border-bottom: 1px solid var(--line);
+    letter-spacing: 0.01em;
+  }
+  .spec dl {
+    margin: 0;
+    padding: 6px 18px 16px;
+  }
+  .spec .row {
+    display: grid;
+    grid-template-columns: 128px 1fr;
+    gap: 12px;
+    padding: 9px 0;
+    border-bottom: 1px dotted var(--line);
+    font-size: 12.5px;
+  }
+  .spec .row:last-child { border-bottom: none; }
+  .spec dt { color: var(--ink-dim); }
+  .spec dd { margin: 0; color: var(--ink); line-height: 1.55; }
+  .spec dd .num { color: var(--accent); font-variant-numeric: tabular-nums; }
+
+  .callout {
+    margin: 16px 18px 18px;
+    padding: 10px 12px;
+    border: 1px dashed var(--line-strong);
+    border-radius: 6px;
+    font-size: 11.5px;
+    line-height: 1.7;
+    color: var(--ink-dim);
+  }
+  .callout b { color: var(--ink); }
+  .callout.tbd { border-color: var(--gold); }
+  .callout.tbd b { color: var(--gold); }
+
+  /* ---------- Full-width doc panel (Game Spec sections: no phone frame) ---------- */
+  .doc {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    padding: 6px 24px 22px;
+    max-width: 900px;
+  }
+  .doc h3 {
+    font-family: -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic", sans-serif;
+    font-size: 14px;
+    margin: 22px 0 10px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .doc h3:first-child { margin-top: 18px; }
+  .doc p { font-size: 12.5px; line-height: 1.8; color: var(--ink); margin: 0 0 10px; }
+  .doc ul { margin: 0 0 10px; padding-left: 20px; font-size: 12.5px; line-height: 1.8; }
+  .doc table { width: 100%; border-collapse: collapse; font-size: 12px; margin: 8px 0 16px; }
+  .doc th, .doc td { text-align: left; padding: 7px 10px; border-bottom: 1px dotted var(--line); }
+  .doc th { color: var(--ink-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  .doc .num { color: var(--accent); font-variant-numeric: tabular-nums; }
+  .doc code { font-size: 11.5px; background: var(--muted-fill); padding: 1px 5px; border-radius: 4px; }
+
+  .piece-mini { display: inline-grid; gap: 2px; vertical-align: middle; margin-right: 6px; }
+  .piece-mini div { width: 12px; height: 12px; border-radius: 2px; background: var(--muted-fill-2); }
+  .piece-mini div.on { background: var(--accent); }
+
+  .view { display: none; }
+  .view[data-active="true"] { display: block; animation: fade 0.18s ease-out; }
+  @media (prefers-reduced-motion: reduce) {
+    .view[data-active="true"] { animation: none; }
+  }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  footer.notes {
+    margin-top: 46px;
+    padding-top: 18px;
+    border-top: 1px dashed var(--line);
+    font-size: 11.5px;
+    color: var(--ink-dim);
+    line-height: 1.8;
+    max-width: 78ch;
+  }
+</style>
+
+<div class="app">
+  <nav class="rail">
+    <div class="rail-brand head">
+      <div class="sheet-no">ChillBlocks / Design Doc</div>
+      <h1>Design &amp; Game Spec</h1>
+      <p>画面設計とゲーム仕様を1つにまとめた統合ドキュメント。Lo-Fi Chillな雰囲気のブロックパズル（Block Blast系）。仕様未確定の項目は <span style="color:var(--gold)">TBD</span> として明示する。</p>
+    </div>
+
+    <ul class="rail-nav" id="nav-list">
+      <li class="group-label">Flow（画面）</li>
+      <li><button data-view="title" aria-current="true"><span class="tag">01</span>Title</button></li>
+      <li><button data-view="play"><span class="tag">02</span>Game Play</button></li>
+      <li><button data-view="gameover"><span class="tag">02a</span>Game Over</button></li>
+      <li class="group-label">Game Spec（仕様）</li>
+      <li><button data-view="gs-board"><span class="tag">GS1</span>Board &amp; Pieces</button></li>
+      <li><button data-view="gs-gen"><span class="tag">GS2</span>Piece Generation</button></li>
+      <li><button data-view="gs-score"><span class="tag">GS3</span>Scoring &amp; Combo</button></li>
+      <li><button data-view="gs-ads"><span class="tag">GS4</span>Monetization</button></li>
+      <li><button data-view="gs-art"><span class="tag">GS5</span>Art &amp; Audio</button></li>
+    </ul>
+
+    <div class="rail-foot">
+      <button class="theme-toggle" id="theme-toggle" type="button">◐ toggle theme</button>
+    </div>
+  </nav>
+
+  <main>
+    <!-- ============ 01 TITLE ============ -->
+    <section class="view" data-view="title" data-active="true">
+      <div class="stage-head head">
+        <div class="eyebrow">01 — Flow</div>
+        <h2>Title</h2>
+        <p>起動直後の画面。ロゴ + Playボタン + ベストスコアのみの最小構成。背景はComfyUI生成のLo-Fi Chillイラスト（静止画1枚）。</p>
+      </div>
+      <div class="legend">
+        <span><i class="swatch static"></i>静的シェル</span>
+        <span><i class="swatch dynamic"></i>動的／データ依存</span>
+        <span><i class="swatch tap"></i>タップ領域</span>
+      </div>
+      <div class="stage-body">
+        <div class="frame-wrap">
+          <div class="frame" id="frame-title">
+            <div class="wf-box" style="inset:0; background:repeating-linear-gradient(135deg, var(--muted-fill) 0 10px, var(--paper) 10px 20px); border:none;">
+              <span class="lbl" style="position:absolute; top:8px; left:8px;">bg_title_lofi.png<br/>(ComfyUI生成, cover, center)</span>
+            </div>
+            <div class="wf-box emph" style="left:8%; right:8%; top:26%; height:14%; background:transparent; border:none;">
+              <span class="lbl" style="font-size:16px; color:var(--ink); font-weight:700;">ChillBlocks<br/><span style="font-size:9px; letter-spacing:.14em; color:var(--ink-dim); font-weight:400;">LO-FI BLOCK PUZZLE</span></span>
+            </div>
+            <div class="wf-box dynamic" style="left:30%; right:30%; top:42%; height:4%; border-radius:10px;">
+              <span class="lbl">BEST 12,480（data-driven）</span>
+            </div>
+            <div class="wf-btn primary" style="left:20%; right:20%; bottom:18.75%; height:6.2%;">Play</div>
+            <div class="wf-box" style="left:30%; right:30%; bottom:1.5%; height:2.4%; background:transparent; border:none;">
+              <span class="lbl" style="font-size:7px;">v0.1 (version-label)</span>
+            </div>
+            <div class="wf-label-tag" style="left:6px; top:6px;">edge-gradient ×2 (top/bottom)</div>
+          </div>
+          <p class="frame-caption">1080 × 1920 基準 / <b>bottom: 360px 固定</b>でCTA配置（SortGemsと同ルール踏襲）</p>
+        </div>
+
+        <div class="spec">
+          <h3 class="head">要素と挙動</h3>
+          <dl>
+            <div class="row"><dt>ロゴ</dt><dd>"ChillBlocks"（仮タイトル）+ サブ文言。将来的にロゴ画像化する場合はここを差し替え。</dd></div>
+            <div class="row"><dt>ベストスコア</dt><dd>ロゴ直下に小さく表示。ローカル永続化（初回起動は非表示 or 0）。</dd></div>
+            <div class="row"><dt>CTA</dt><dd><span class="num">btn-lg</span>、画面下端から<span class="num">360px</span>固定位置。タップで Game Play へ直行（ステージ選択なし＝エンドレス1本道）。</dd></div>
+            <div class="row"><dt>背景</dt><dd>静止画1枚。ComfyUIで生成したLo-Fiイラスト（アニメーションなし、SortGemsのタイトル画面と同方針）。</dd></div>
+          </dl>
+          <div class="callout"><b>設計方針：</b>Block Blast系はステージ制ではなくエンドレスなので、SortGemsにあった「Stage Select」画面は存在しない。Title → Game Play の1ホップのみ。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02 GAME PLAY ============ -->
+    <section class="view" data-view="play">
+      <div class="stage-head head">
+        <div class="eyebrow">02 — Flow</div>
+        <h2>Game Play</h2>
+        <p>8×8盤面 + 3ピースのトレイ。制限時間なし、詰む（3ピースどれも置けない）までエンドレスに継続。</p>
+      </div>
+      <div class="legend">
+        <span><i class="swatch static"></i>HUD</span>
+        <span><i class="swatch dynamic"></i>盤面・ピース（データ依存）</span>
+        <span><i class="swatch tap"></i>タップ／ドラッグ領域</span>
+      </div>
+      <div class="stage-body">
+        <div class="frame-wrap">
+          <div class="frame" id="frame-play"></div>
+          <p class="frame-caption">盤面は<b>常に8×8固定</b>（SortGemsと異なりステージごとの可変なし）</p>
+        </div>
+
+        <div class="spec">
+          <h3 class="head">要素と挙動</h3>
+          <dl>
+            <div class="row"><dt>HUD top</dt><dd>現在スコア（左）/ 設定・一時停止アイコン（右）。背景帯なし（透過、SortGemsの2026-07-11方針を踏襲）。</dd></div>
+            <div class="row"><dt>盤面</dt><dd>8×8固定グリッド。セルは「空」「埋まっている」の2状態のみ（SortGemsのgoalColor概念なし）。</dd></div>
+            <div class="row"><dt>ピーストレイ</dt><dd>常に3ピース表示。ドラッグして盤面に配置。1つ使うと空きスロットになり、<b>3つ全部使い切ったタイミングで3つ同時に補充</b>（Block Blast系の基本ルール）。</dd></div>
+            <div class="row"><dt>ライン消し</dt><dd>行 or 列が全て埋まると消える（対角は対象外）。詳細は <b>GS3</b> 参照。</dd></div>
+            <div class="row"><dt>配置不可時のプレビュー</dt><dd>ドラッグ中、置けない位置は赤系ハイライトで即時フィードバック（TBD: 実機で厳密な色/挙動を確認）。</dd></div>
+            <div class="row"><dt>ゲーム終了条件</dt><dd>トレイの3ピースいずれも盤面に置けない状態になった瞬間。→ <b>02a Game Over</b> 参照。</dd></div>
+          </dl>
+          <div class="callout tbd"><b>TBD：</b>リシャッフル機能（詰みそうな時に手持ちピースを広告視聴で入れ替える救済策）を入れるか未定。入れる場合は GS4（広告頻度）との兼ね合いを要検討。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 02a GAME OVER ============ -->
+    <section class="view" data-view="gameover">
+      <div class="stage-head head">
+        <div class="eyebrow">02a — Overlay on Game Play</div>
+        <h2>Game Over</h2>
+        <p>3ピースどれも置けなくなった時点で表示。広告視聴で1回だけ復活できる（Continue）。</p>
+      </div>
+      <div class="stage-body">
+        <div class="frame-wrap">
+          <div class="frame" id="frame-gameover"></div>
+          <p class="frame-caption">パネル中央固定・背景スクリム（SortGemsの<b>Cleared/Failed</b>パネルと同構造）</p>
+        </div>
+        <div class="spec">
+          <h3 class="head">要素と挙動</h3>
+          <dl>
+            <div class="row"><dt>タイトル</dt><dd>"Game Over" danger色。</dd></div>
+            <div class="row"><dt>スコア表示</dt><dd>今回のスコア + ベストスコア（更新時はハイライト演出）。</dd></div>
+            <div class="row"><dt>ボタン1</dt><dd><b>Continue（Watch Ad）</b>。1プレイにつき1回まで。視聴後、直前の詰み状態のまま手持ち3ピースだけ入れ替えて復帰（案。詳細GS4）。<code>AdManager.IsRewardedReady</code>に応じて<b>Ready / Loading / Unavailable</b>の3状態を表示（詳細GS4「Continueボタンの3状態」）。</dd></div>
+            <div class="row"><dt>ボタン2/3</dt><dd>Retry（新規盤面で再開） / Home（Titleへ）。<b>広告の読込状態に関わらず常に操作可能</b>（Continueが使えない時の唯一の抜け道を塞がない）。</dd></div>
+          </dl>
+          <div class="callout"><b>設計方針：</b>「1プレイ終わるごとに広告」は<b>ここでのインタースティシャルではなく</b>、GS4で定義する頻度キャップ付きの間欠表示にする（<code>AdManager.OnGameOver()</code>から起動）。Continueはリワード広告（プレイヤー起点・任意）として別枠。両方ともSortGemsの<code>AdManager.cs</code>を移植したものを使う（GS4参照）。</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ GS1 BOARD & PIECES ============ -->
+    <section class="view" data-view="gs-board">
+      <div class="stage-head head">
+        <div class="eyebrow">GS1 — Game Spec</div>
+        <h2>Board &amp; Piece Set</h2>
+        <p>盤面とピース形状の基本仕様。SEO攻略記事ではなく、実際に動く2つのオープンソース実装のソースコードを根拠に更新。</p>
+      </div>
+      <div class="doc">
+        <div class="callout"><b>調査ソース（実装コード）：</b>
+          <a href="https://github.com/RisticDjordje/BlockBlast-Game-AI-Agent" target="_blank">RisticDjordje/BlockBlast-Game-AI-Agent</a>（Python/Pygame、RLエージェント学習用の自作再現実装）と
+          <a href="https://github.com/tokaa1/blockerino" target="_blank">tokaa1/blockerino</a>（TypeScript/React Native、Block Blastクローンアプリ）の2つを実際にクローンしてソースを読んだ。どちらも本家の公式コードではなく<b>サードパーティの再現実装</b>だが、SEO攻略記事の推測とは違い「実際に動いて遊べる」実装であり、2つの独立した実装が一致する点は信頼度が高いと判断できる。
+        </div>
+
+        <h3>盤面</h3>
+        <ul>
+          <li><b>【確認済み・実装コード】</b>8×8固定グリッド。両実装ともCoreモードは8×8で一致（blockerinoは<code>boardLength = gameMode == Chaos ? 10 : 8</code>と、10×10・5ピース手持ちの「Chaos」という別モードも実装していたが、これは本家Block Blastの確認済み仕様ではなくクローン側の独自追加。ChillBlocksのスコープには含めない）。</li>
+          <li>セル状態は「空」「埋まり」の2値。SortGemsのような目標色（goalColor）の概念はない。</li>
+        </ul>
+
+        <h3>ピーストレイ</h3>
+        <ul>
+          <li><b>【確認済み・実装コード】</b>常に3ピースを保持。<b>3つ全部を配置し終えたタイミング</b>でまとめて新しい3ピースが配られる（両実装とも「手持ち配列が全部nullになったら一括生成」というロジックで一致）。</li>
+          <li><b>【確認済み・実装コード】プレイヤー操作としての回転は不可。</b>ただし<b>同じ形状の別向き（L字の4方向など）はそれぞれ別ピースとしてプールに登録されている</b>（ristic実装の<code>FORMS</code>配列で、L字だけで4〜8バリエーションが個別に定義されているのを確認）。以前「想定」としていた点がソースコードで裏付けられた。</li>
+        </ul>
+
+        <h3>ゲームモードの範囲（確認済み・スコープ確認）</h3>
+        <div class="callout"><b>確認済み：</b>実際のBlock Blastには<b>Classic（エンドレス・ハイスコア勝負）</b>と<b>Adventure（レベル制・アプリ版のみ）</b>の2モードが存在する。ChillBlocksが今議論しているのは<b>Classicモード相当</b>（本ドキュメントのGame Play画面もこちら）。Adventure的なレベル制モードは将来拡張のスコープ外として明示しておく。</div>
+
+        <h3>ピース形状カタログ（実装コードから抽出・確定版）</h3>
+        <p>2つの実装は形状セットが完全一致ではないが、共通する主要形状は次の通り。ChillBlocksではこの合成カタログをそのまま採用してよい。</p>
+        <table>
+          <tr><th>分類</th><th>形状イメージ</th><th>備考</th></tr>
+          <tr><td>1マス</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(1,1fr);"><div class="on"></div></div>
+          </td><td>ristic実装のみ（詰み回避のフォールバック用ピース。blockerinoには無し）</td></tr>
+          <tr><td>2マス（直線）</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(2,1fr);"><div class="on"></div><div class="on"></div>
+          </div></td><td>両実装で確認。縦横2方向</td></tr>
+          <tr><td>3マス直線</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(3,1fr);"><div class="on"></div><div class="on"></div><div class="on"></div>
+          </div></td><td>両実装で確認。縦横2方向。blockerinoでは出現重み4（かなり高頻度）</td></tr>
+          <tr><td>4マス直線（I）</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(4,1fr);"><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div>
+          </div></td><td>両実装で確認。縦横2方向</td></tr>
+          <tr><td>5マス直線</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(5,1fr);"><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div>
+          </div></td><td><b>ristic実装のみ確認</b>（blockerinoは4マスまでで5マス直線は無し）</td></tr>
+          <tr><td>2×2 正方形</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(2,1fr);"><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div>
+          </div></td><td>両実装で確認。blockerinoでは出現重み6＝<b>全形状中で最も出やすい</b>設定</td></tr>
+          <tr><td>3×3 正方形</td><td>
+            <div class="piece-mini" style="grid-template-columns:repeat(3,1fr);"><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div><div class="on"></div>
+          </div></td><td>両実装で確認（Web攻略記事の「最大の詰み要因」という証言とも一致）。blockerinoでは出現重み3で中程度</td></tr>
+          <tr><td>L字（3マス脚）</td><td>—</td><td>ristic実装で4方向、blockerinoでもL字系8バリエーションを個別定義</td></tr>
+          <tr><td>L字（2×2の角欠け）</td><td>—</td><td>ristic実装で4方向確認</td></tr>
+          <tr><td>T字</td><td>—</td><td>ristic実装で4方向。blockerinoは近い「三角形」系4方向・出現重み1.5（やや低頻度）</td></tr>
+          <tr><td>S字/Z字</td><td>—</td><td>両実装で4方向確認。blockerinoでは出現重み1＝<b>全形状中で最も出にくい</b>設定</td></tr>
+        </table>
+        <div class="callout"><b>結論：</b>プラス字（+）や6マス以上の異形ピースは、調べた2実装のどちらにも存在しなかった。実装するならこの表の形状セットで十分カバー範囲として妥当。<b>ただしどちらも本家の非公開コードではなくサードパーティ再現なので、「本家と完全に同一」の保証はない</b>——それでも2つの独立実装が一致する形状（直線・正方形・L/T/S/Z）は本家も同様の構成だろうという確度は高い。</div>
+      </div>
+    </section>
+
+    <!-- ============ GS2 PIECE GENERATION ============ -->
+    <section class="view" data-view="gs-gen">
+      <div class="stage-head head">
+        <div class="eyebrow">GS2 — Game Spec</div>
+        <h2>Piece Generation Logic</h2>
+        <p>次に配られる3ピースの生成アルゴリズム。SEO攻略記事は矛盾だらけだったが、実装コード2件からは対照的な2つの現実的な設計が見つかった。</p>
+      </div>
+      <div class="doc">
+        <h3>Web検索での限界（前回の記録）</h3>
+        <p>SEO攻略記事は「単純ランダム」「盤面解析して意図的に難しくする」「7回連続で300%補正のピティタイマー」など互いに矛盾し、出典もなく信頼できなかった（詳細は前回の調査ログ参照）。</p>
+
+        <h3>実装コードで見つかった、対照的な2つの現実解</h3>
+        <p><a href="https://github.com/RisticDjordje/BlockBlast-Game-AI-Agent" target="_blank">ristic実装</a>と<a href="https://github.com/tokaa1/blockerino" target="_blank">blockerino実装</a>は、出現ロジックの設計思想が正反対だった。</p>
+
+        <table>
+          <tr><th></th><th>A: ristic実装（保証付き生成）</th><th>B: blockerino実装（重み付きランダム）</th></tr>
+          <tr><td>方式</td><td>盤面状態を見て、<b>3つとも必ずどこかに置けることを保証</b>してから配る（置けない形状は候補から除外し、置ける形状が見つかるまで探索）</td><td>盤面は一切見ない。<b>形状ごとの出現重み（distributionPoints）による単純な重み付きランダム</b>抽選を3回行うだけ</td></tr>
+          <tr><td>盤面が詰む可能性</td><td>READMEに明記: 「the game engine guarantees that at least one of the three available shapes can always be placed」＝<b>設計上、詰みは起こらない</b></td><td>盤面を見ないため<b>理論上「3つとも置けない」詰み状態が起こり得る</b></td></tr>
+          <tr><td>本家との整合性</td><td>前回のWeb調査で見た「本家は時々詰む（no-solution状態が実在する）」という証言と<b>矛盾</b>する</td><td>「本家は時々詰む」という証言と<b>整合する</b></td></tr>
+        </table>
+
+        <div class="callout"><b>ChillBlocksでの採用方針（推奨）：</b> B（blockerino方式の重み付きランダム）を採用する。理由は、前回のWeb調査で確認できた「本家は理不尽に感じるほど難しい組み合わせが来ることがあり、実際に詰むことがある」という実態と、Aの「詰み保証」設計は矛盾するため。Aは著者自身のRLエージェント学習用の独自改良であり、本家の再現を意図したものではない（README内でも本家準拠を主張していない）。Bのほうが「本家らしいランダムさ・理不尽さ」を再現しやすい。</div>
+
+        <h3>採用する重み付け（blockerino実装からそのまま移植）</h3>
+        <table>
+          <tr><th>形状分類</th><th>出現重み</th><th>備考</th></tr>
+          <tr><td>2×2 正方形</td><td class="num">6</td><td>最も出やすい</td></tr>
+          <tr><td>3マス直線（1×3/3×1）</td><td class="num">4</td><td></td></tr>
+          <tr><td>3×3 正方形</td><td class="num">3</td><td></td></tr>
+          <tr><td>L字（8バリエーション）</td><td class="num">2 each</td><td></td></tr>
+          <tr><td>2マス・4マス直線</td><td class="num">2 each</td><td></td></tr>
+          <tr><td>T字/三角形（4バリエーション）</td><td class="num">1.5 each</td><td></td></tr>
+          <tr><td>S字/Z字（4バリエーション）</td><td class="num">1 each</td><td>最も出にくい</td></tr>
+        </table>
+        <p>実装は「全ピースの重み合計に対する乱数位置」で1つ選ぶルーレット選択（blockerinoの<code>getRandomPiece()</code>と同じロジック）を3回繰り返すだけで良い。盤面状態は見ない。</p>
+
+        <h3>次アクション・残るTBD</h3>
+        <div class="callout tbd"><b>TBD：</b>上記2実装はいずれも本家の非公開コードではなく<b>サードパーティ再現</b>であり、本家が本当に「盤面を一切見ない重み付きランダム」なのか、あるいはDeconstructor of Funが示唆したような何らかの難易度連動要素を持つのかは、依然として確証がない。まずはB方式で実装し、プレイフィールに不満（理不尽すぎる／簡単すぎる）が出たら、ristic方式のような緩い「置ける保証」を部分的に混ぜる調整を検討する、という段階的な進め方を推奨する。</div>
+      </div>
+    </section>
+
+    <!-- ============ GS3 SCORING & COMBO ============ -->
+    <section class="view" data-view="gs-score">
+      <div class="stage-head head">
+        <div class="eyebrow">GS3 — Game Spec</div>
+        <h2>Scoring &amp; Combo</h2>
+        <p>得点計算とコンボ／連鎖ボーナスの仕様。実装コード2件から具体的な式が見つかり、コンボが途切れる条件は<b>2つの独立実装が一致</b>した。</p>
+      </div>
+      <div class="doc">
+        <h3>「コンボ」と「ストリーク」は別概念（Web調査時点で確認済み・据え置き）</h3>
+        <ul>
+          <li><b>コンボ</b> = 1回の配置で複数ライン（行・列）を同時に消すこと。</li>
+          <li><b>ストリーク</b> = 連続する手でライン消しを続けること。</li>
+        </ul>
+        <p>ただし実装コード2件を見ると、この2つを<b>1本のcomboカウンター</b>で表現している（消すたびに加算、消せない手が続くとリセット）のが実態に近く、「別々の変数」として厳密に分ける必要は薄いかもしれない。下記の2実装もどちらもcombo変数1本で両方の概念を兼ねている。</p>
+
+        <h3>実装コードで見つかった、2つの具体的な計算式</h3>
+        <table>
+          <tr><th></th><th>A: ristic実装</th><th>B: blockerino実装</th></tr>
+          <tr><td>配置しただけの加点</td><td>なし（ライン消し時のみ加点）</td><td class="num">置いたピースのマス数だけ加点</td></tr>
+          <tr><td>ライン消しの基礎計算</td><td class="num">bonus = 消したライン数 × 10 × (combo数+1)</td><td class="num">score += 消したライン数 × 盤面サイズ(8) × (combo数/2) × 置いたピースのマス数</td></tr>
+          <tr><td>複数ライン同時消しの補正</td><td class="num">3ライン以上なら bonus ×= (ライン数−1)</td><td>上の式に自然に内包（linesBrokenが式に直接掛かる）</td></tr>
+          <tr><td>全消し（All Clear）ボーナス</td><td class="num">+300固定</td><td>なし（未実装）</td></tr>
+          <tr><td>comboの増分</td><td>消したライン数ぶん加算</td><td>消したライン数ぶん加算</td></tr>
+        </table>
+
+        <h3>【確認済み・2実装が一致】コンボが途切れる条件</h3>
+        <div class="callout"><b>2つの独立した実装が一致：</b>「ライン消しを伴わない配置が<b>3回連続</b>したらコンボを0にリセットする」という条件が、ristic（<code>MAX_COMBO_STREAK = 3</code>）とblockerino（<code>lastBrokenLine >= handSize</code>、handSize=3）の<b>両方でまったく同じ「3」という値</b>で実装されていた。手持ちピース数（3）と揃えているのは自然な設計であり、ChillBlocksでも同じ「3回ライン消し無しでコンボリセット」を採用してよい確度が高い。</div>
+
+        <h3>ChillBlocksでの採用方針（推奨）</h3>
+        <p><b>A（ristic方式）を初期実装のベースに採用する。</b>理由: 配置マス数に依存せず「10点×ライン数×(combo+1)」という単純な式で調整しやすく、all-clearボーナスもプレイヤーへの分かりやすい報酬になる。Bの「盤面サイズ×マス数」を絡めた式は数値が急激に大きくなりやすく、初期のバランス調整がしにくい。</p>
+        <table>
+          <tr><th>イベント</th><th>ChillBlocks初期値（ristic方式を採用）</th></tr>
+          <tr><td>ライン消し（1本）</td><td class="num">10 × (combo数+1)</td></tr>
+          <tr><td>複数ライン同時消し（3本以上）</td><td class="num">上の値 ×(ライン数−1)</td></tr>
+          <tr><td>全消しボーナス</td><td class="num">+300</td></tr>
+          <tr><td>コンボリセット条件</td><td class="num">ライン消し無しの配置が3回連続</td></tr>
+        </table>
+        <div class="callout tbd"><b>TBD：</b>これも本家の公式数値ではなくサードパーティ実装からの拝借。実際にプレイしてみてスコアの伸び方が気持ちよいかどうかは調整が必要（特に+300の全消しボーナスの重み付けは実プレイでチューニング推奨）。</div>
+      </div>
+    </section>
+
+    <!-- ============ GS4 MONETIZATION ============ -->
+    <section class="view" data-view="gs-ads">
+      <div class="stage-head head">
+        <div class="eyebrow">GS4 — Game Spec</div>
+        <h2>Monetization（広告）</h2>
+        <p>「1プレイ終わるごとに広告」案を、離脱率とのバランスを見て具体化した仕様。</p>
+      </div>
+      <div class="doc">
+        <h3>実機（本家Block Blast）の確認済み事実</h3>
+        <div class="callout"><b>確認済み（ゲーム業界分析メディア Deconstructor of Fun）：</b>本家Block Blastは<b>課金アイテム（IAP）を一切持たず、広告収益のみ</b>で成立している。同ジャンルでは珍しい設計だが、これで十分ビジネスとして成立することが実例として確認できた。ChillBlocksの初期スコープでも、IAP・ストア機能は作らず<b>広告のみ</b>に絞ってよい根拠になる。</div>
+
+        <h3>基本方針</h3>
+        <ul>
+          <li><b>インタースティシャル（強制広告）</b>: Game Over直後に表示。ただし<b>頻度キャップ</b>を設け、毎回ではなく例えば「直近の表示から一定回数のGame Overを空ける」形にする（初心者の即時離脱を防ぐ）。</li>
+          <li><b>リワード広告（任意・プレイヤー起点）</b>: Game Over画面の Continue ボタン。1プレイにつき1回まで、視聴で復活。</li>
+          <li><b>バナーは使わない（決定）。</b>常時表示のバナーはLo-Fi Chillな画面の余白・雰囲気を常時削るため、GS5のArt Directionと矛盾する。インタースティシャル＋リワードの2枠のみに絞る。</li>
+        </ul>
+
+        <h3>実装アーキテクチャ：SortGemsの<code>AdManager</code>を移植</h3>
+        <p>ゼロから設計するのではなく、SortGemsで既に動いている <code>SortGemsUnity/Assets/Scripts/Ads/AdManager.cs</code>（Google AdMob Unity Plugin採用、シングルトン、Editor/非モバイルでは自動モック化）をほぼそのまま移植する。広告SDKまわりは枯れた実装を使い回し、ChillBlocks側で新規に書くのはトリガーの呼び出し箇所だけに絞る。</p>
+        <table>
+          <tr><th>SortGemsでの実装</th><th>ChillBlocksでの扱い</th></tr>
+          <tr><td><code>AdManager</code>（シングルトン、AdMob初期化、Editor時は自動ダミー広告）</td><td><b>そのまま移植。</b>変更不要。</td></tr>
+          <tr><td><code>OnStageCleared()</code>（ステージクリア毎にNカウント、閾値到達でインタースティシャル表示）</td><td><code>OnGameOver()</code>に改名し、<b>ステージクリアの代わりにGame Overのたびに呼ぶ</b>（ロジックは同一、呼び出しタイミングだけ変更）。</td></tr>
+          <tr><td><code>ShowRewardedAd(Action onRewardEarned, Action onFallback)</code></td><td><b>そのまま流用。</b>Game Overの Continue ボタンから呼び、<code>onRewardEarned</code>で復活処理、<code>onFallback</code>（広告未準備時）でボタンをUnavailable表示に切替。</td></tr>
+          <tr><td><code>IsRewardedReady</code> / <code>IsInterstitialReady</code>（public bool）</td><td><b>そのまま流用。</b>Continueボタンの表示状態（下記）を毎フレーム／表示直前にこれで判定。</td></tr>
+          <tr><td><code>ShowBanner()</code> / <code>HideBanner()</code></td><td><b>呼び出さない。</b>ChillBlocksはバナー不使用の方針（上記）のため未使用のまま残しておいてよい。</td></tr>
+        </table>
+
+        <h3>頻度制御の具体パラメータ</h3>
+        <table>
+          <tr><th>項目</th><th>値</th><th>備考</th></tr>
+          <tr><td>インタースティシャル頻度キャップ</td><td class="num">Game Over 3回に1回</td><td><code>_interstitialEveryNGameOvers = 3</code>。SortGemsの<code>_interstitialEveryNStages</code>と同じ既定値をそのまま踏襲。</td></tr>
+          <tr><td>初回Game Over免除</td><td class="num">表示しない（新規追加）</td><td>SortGems側には無いガード。インストール後の最初のGame Overで即広告が出るとDay1離脱に直結するため、ChillBlocksでは<code>hasShownFirstGameOver</code>フラグで初回のみ必ずスキップする。</td></tr>
+          <tr><td>Continue（リワード）上限</td><td class="num">1プレイにつき1回</td><td><code>rewardedContinueUsedThisRun</code>（bool）。新しいプレイ開始時にリセット。</td></tr>
+          <tr><td>広告未準備時の挙動</td><td class="num">インタースティシャル: 無言でスキップ<br>リワード: ボタンをUnavailable表示</td><td>どちらもプレイヤーの操作をブロックしない（<code>onFallback</code>実行）。</td></tr>
+        </table>
+
+        <h3>Game Over画面: Continueボタンの3状態</h3>
+        <p><code>AdManager.IsRewardedReady</code> の値で、Continueボタンの見た目を切り替える（02a画面に反映）。</p>
+        <table>
+          <tr><th>状態</th><th>表示</th><th>条件</th></tr>
+          <tr><td>Ready</td><td>通常表示・タップ可</td><td><code>IsRewardedReady == true</code>（事前ロード済み）</td></tr>
+          <tr><td>Loading</td><td>スピナー表示・タップ不可</td><td>ロード中（Game Over発生直後、ロードがまだ間に合っていない場合）</td></tr>
+          <tr><td>Unavailable</td><td>グレーアウト＋「広告を準備できませんでした」の小文字、タップ不可</td><td>ロード失敗（オフライン・在庫切れ等）。この場合もRetry/Homeボタンは常に操作可能にする</td></tr>
+        </table>
+
+        <h3>同意・プライバシー対応（GDPR / iOS ATT）— 未着手の共通課題</h3>
+        <div class="callout tbd"><b>TBD（SortGemsにも無い）：</b>現状のSortGemsの<code>AdManager</code>にはGoogle UMP（Consent SDK）やiOSのApp Tracking Transparencyプロンプトの実装が無い（<code>AndroidResolverDependencies.xml</code>を確認したがUMP関連の依存が見当たらなかった）。ChillBlocksでも同じ穴を引き継ぐことになるため、どこかのタイミングで両プロジェクト共通の対応として着手する必要がある。実装するなら「初回起動時、最初の広告リクエスト前」にUMPフォーム→（iOSのみ）ATTプロンプトの順で挟むのが定石。ChillBlocks固有の問題ではないため、この場では方針決定に留め、着手はSortGems側と合わせて別途計画する。</div>
+      </div>
+    </section>
+
+    <!-- ============ GS5 ART & AUDIO ============ -->
+    <section class="view" data-view="gs-art">
+      <div class="stage-head head">
+        <div class="eyebrow">GS5 — Game Spec</div>
+        <h2>Art &amp; Audio Direction</h2>
+        <p>Lo-Fi Chillな世界観の定義。SortGemsの「Cozy Lo-Fi Pixel Palette」の方向性を継承しつつ、ブロックパズル向けに簡略化する。</p>
+      </div>
+      <div class="doc">
+        <h3>ビジュアル</h3>
+        <ul>
+          <li>タイトル背景・ゲームプレイ背景は<b>ComfyUIで生成した静止画1〜2枚</b>（アニメーションなし）。この2枚だけで世界観の大半を作る＝アセット制作コストを最小化する狙い。</li>
+          <li>ブロック本体の配色も、彩度の高い原色ではなく<b>温かみのあるパステル系</b>（SortGems Visual Design Specの方向性を流用）に寄せる。プレイ中は盤面がブロックで埋まるため、背景以上にブロックの配色が体感の雰囲気を左右する点に注意。</li>
+          <li>枠線は太めで丸みを持たせ、影は黒ではなく紫がかったグレー／ブラウン系に統一（SortGems Do/Don'tルールを踏襲）。</li>
+        </ul>
+        <h3>オーディオ</h3>
+        <ul>
+          <li>BGM: Lo-Fi Hip-Hop調のループ（環境音・雨音レイヤーなども検討）。</li>
+          <li>SE: ピース配置・ライン消しとも「静かで気持ちいい」音に統一。キャンディークラッシュ系の派手な効果音は避ける。</li>
+        </ul>
+        <div class="callout"><b>差別化の要点：</b>ジャンル自体はBlock Blast系のトレースだが、<b>見た目＋音の両方をLo-Fi Chillに統一</b>することが差別化の軸。背景だけでなくブロックの配色・SEのトーンまで一貫させないと、プレイ中に元のゲームと変わらない印象になってしまう点に注意（過去の相談で指摘済み）。</div>
+      </div>
+    </section>
+
+    <footer class="notes head">
+      <b>凡例の読み方：</b> 実線＝毎回同じ静的UIシェル。破線＝プレイ状況によって内容が変わる領域。<span style="color:var(--gold)">TBD</span> は実機調査（Block Blast!の実プレイ）で確定させる項目。本ドキュメントはSortGemsの <code>documents/wireframes/wireframes.html</code> の設計システムを流用して作成。
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  function el(tag, cls, style) {
+    var e = document.createElement("div");
+    if (cls) e.className = cls;
+    if (style) e.setAttribute("style", style);
+    return e;
+  }
+
+  function labelBox(container, cls, style, text) {
+    var b = el("div", "wf-box " + cls, style);
+    var l = document.createElement("span");
+    l.className = "lbl";
+    l.innerHTML = text;
+    b.appendChild(l);
+    container.appendChild(b);
+    return b;
+  }
+
+  function tag(container, style, text) {
+    var t = el("div", "wf-label-tag", style);
+    t.textContent = text;
+    container.appendChild(t);
+    return t;
+  }
+
+  // Build the shared "Game Play" chrome (HUD + 8x8 board + piece tray),
+  // then optionally layer a modal on top for the Game Over overlay.
+  function buildPlayFrame(frame, opts) {
+    opts = opts || {};
+    frame.innerHTML = "";
+
+    // HUD top — score (left) / pause icon (right), transparent (no bg band)
+    labelBox(frame, "emph", "left:0; right:0; top:0; height:6.2%; background:transparent; border:none; border-bottom:1.4px dashed var(--line-strong); justify-content:space-between; padding:0 4%;",
+      "Score 128&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&#x2699;");
+
+    // 8x8 board
+    var boardN = 8;
+    var boardWrap = el("div", "wf-grid", "left:8%; right:8%; top:10%; height:52%; grid-template-columns: repeat(" + boardN + ", 1fr); grid-template-rows: repeat(" + boardN + ", 1fr);");
+    var filledPattern = [3,4,5,11,12,13,19,20,26,27,28,34,35,36,42,43,50,51,58,59];
+    for (var i = 0; i < boardN * boardN; i++) {
+      var isFilled = filledPattern.indexOf(i) !== -1;
+      boardWrap.appendChild(el("div", "wf-cell" + (isFilled ? " filled" : "")));
+    }
+    frame.appendChild(boardWrap);
+    tag(frame, "right:4px; top:10.6%;", "8×8固定");
+
+    // Piece tray (3 slots)
+    var trayWrap = el("div", "", "position:absolute; left:8%; right:8%; top:66%; height:16%; display:flex; gap:6%;");
+    var pieceShapes = [
+      { cols: 3, rows: 1, on: [0,1,2] },
+      { cols: 2, rows: 2, on: [0,1,2,3] },
+      { cols: 3, rows: 2, on: [0,1,3,4] }
+    ];
+    pieceShapes.forEach(function (shape) {
+      var slot = el("div", "", "position:relative; flex:1; border:1.4px dashed var(--accent-line); border-radius:8px; background:var(--accent-soft); display:flex; align-items:center; justify-content:center;");
+      var mini = el("div", "wf-grid", "position:relative; left:auto; right:auto; top:auto; width:60%; aspect-ratio:" + shape.cols + "/" + shape.rows + "; grid-template-columns: repeat(" + shape.cols + ", 1fr); grid-template-rows: repeat(" + shape.rows + ", 1fr); border:none; padding:0;");
+      for (var j = 0; j < shape.cols * shape.rows; j++) {
+        mini.appendChild(el("div", "wf-cell" + (shape.on.indexOf(j) !== -1 ? " filled" : ""), "background:" + (shape.on.indexOf(j) !== -1 ? "var(--accent-line)" : "transparent") + ";"));
+      }
+      slot.appendChild(mini);
+      trayWrap.appendChild(slot);
+    });
+    frame.appendChild(trayWrap);
+    tag(frame, "left:8%; top:83%;", "3ピース、全消費で同時補充");
+
+    if (opts.modal) {
+      var scrim = el("div", "wf-overlay-scrim", "");
+      frame.appendChild(scrim);
+
+      var modal = el("div", "wf-modal", "left:14%; right:14%; top:24%; height:48%;");
+      var title = el("div", "", "font-size:12px; font-weight:700; color:" + opts.modal.titleColor + ";");
+      title.textContent = opts.modal.title;
+      modal.appendChild(title);
+      if (opts.modal.desc) {
+        var desc = el("div", "", "font-size:7.5px; color:var(--ink-dim); text-align:center; padding:0 4%;");
+        desc.textContent = opts.modal.desc;
+        modal.appendChild(desc);
+      }
+      opts.modal.buttons.forEach(function (b, idx) {
+        var bb = el("div", "wf-btn" + (idx === 0 ? " primary" : ""), "position:relative; width:82%; height:14%; margin-top:3%; font-size:8px;");
+        bb.textContent = b;
+        modal.appendChild(bb);
+      });
+      frame.appendChild(modal);
+    }
+  }
+
+  buildPlayFrame(document.getElementById("frame-play"));
+  buildPlayFrame(document.getElementById("frame-gameover"), {
+    modal: {
+      title: "GAME OVER",
+      titleColor: "var(--danger)",
+      desc: "Score 128 / Best 340",
+      buttons: ["Continue (Watch Ad)", "Retry", "Home"]
+    }
+  });
+
+  // ---- Nav ----
+  var buttons = Array.prototype.slice.call(document.querySelectorAll(".rail-nav button"));
+  var views = Array.prototype.slice.call(document.querySelectorAll(".view"));
+  buttons.forEach(function (b) {
+    b.addEventListener("click", function () {
+      var target = b.getAttribute("data-view");
+      buttons.forEach(function (x) { x.removeAttribute("aria-current"); });
+      b.setAttribute("aria-current", "true");
+      views.forEach(function (v) {
+        v.setAttribute("data-active", v.getAttribute("data-view") === target ? "true" : "false");
+      });
+    });
+  });
+
+  // ---- Theme toggle ----
+  var root = document.documentElement;
+  var toggle = document.getElementById("theme-toggle");
+  toggle.addEventListener("click", function () {
+    var current = root.getAttribute("data-theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var next;
+    if (!current) next = prefersDark ? "light" : "dark";
+    else next = current === "dark" ? "light" : "dark";
+    root.setAttribute("data-theme", next);
+  });
+})();
+</script>

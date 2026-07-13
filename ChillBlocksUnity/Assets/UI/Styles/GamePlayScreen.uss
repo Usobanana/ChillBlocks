@@ -1,0 +1,120 @@
+.hud-top {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    right: 40px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.hud-score {
+    font-size: var(--fs-h2);
+    color: var(--color-text);
+    -unity-font-style: bold;
+}
+
+.hud-best {
+    font-size: var(--fs-body);
+    color: var(--color-text-dim);
+}
+
+.board-container {
+    width: 960px;
+    height: 960px;
+    align-self: center;
+    background-color: var(--color-surface);
+    border-radius: var(--radius-md);
+    padding: var(--sp-sm);
+}
+
+.board-cell {
+    margin: 2px;
+    background-color: rgba(255, 255, 255, 0.06);
+    border-radius: 4px;
+}
+
+.board-cell-preview-ok {
+    background-color: var(--color-success);
+}
+
+.board-cell-preview-bad {
+    background-color: var(--color-danger);
+}
+
+.reaction-label {
+    position: absolute;
+    top: 22%;
+    left: 50%;
+    translate: -50% -50%;
+    font-size: 56px;
+    color: var(--color-accent);
+    -unity-font-style: bold;
+    -unity-text-align: middle-center;
+    white-space: normal;
+}
+
+.tray-container {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-top: var(--sp-xl);
+}
+
+/* スロットは常に最大ピース（4x4マス分）が収まる固定サイズを確保する。
+   ピースの形に合わせて自動サイズにすると、手持ちが変わるたびにスロット幅が変わり、
+   3スロットの並び全体が中央寄せで再配置されて盤面と無関係にマスがズレて見えるため
+   （実機フィードバックで発覚）。中身のピースはこの固定枠の中でcenterされるだけにする。 */
+.tray-slot {
+    width: 248px;
+    height: 248px;
+    margin: 0 var(--sp-lg);
+    padding: var(--sp-sm);
+    background-color: var(--color-surface);
+    border-radius: var(--radius-sm);
+    align-items: center;
+    justify-content: center;
+}
+
+.tray-slot-used {
+    opacity: 0.15;
+}
+
+.piece-cell-filled {
+    border-radius: 4px;
+    border-width: 2px;
+    border-color: rgba(43, 30, 20, 0.45);
+}
+
+.drag-ghost {
+    position: absolute;
+    opacity: 0.85;
+}
+
+/* ===== Game Over panel ===== */
+.result-panel {
+    min-width: 560px;
+    min-height: 640px;
+    justify-content: center;
+}
+
+.result-title-gameover {
+    font-size: var(--fs-display);
+    color: var(--color-danger);
+    -unity-font-style: bold;
+    margin-bottom: var(--sp-md);
+}
+
+.gameover-score {
+    font-size: var(--fs-h3);
+    color: var(--color-text);
+    margin-bottom: var(--sp-lg);
+}
+
+.result-buttons {
+    align-items: center;
+}
+
+.result-buttons > .btn {
+    margin-bottom: var(--sp-sm);
+}
