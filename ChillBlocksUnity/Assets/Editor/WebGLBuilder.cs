@@ -47,6 +47,9 @@ public class WebGLBuilder
 
         if (summary.result == BuildResult.Succeeded)
         {
+            // GitHub PagesがデフォルトでJekyllを通そうとしてUnity WebGL出力と衝突するのを防ぐ
+            // （テーマのSCSSレンダリングで "dir_chdir0" エラーが出て公開に失敗する事例があったため）。
+            File.WriteAllText(Path.Combine(buildPath, ".nojekyll"), string.Empty);
             Debug.Log($"[WebGLBuilder] WebGLビルド成功！サイズ: {summary.totalSize} bytes");
         }
         else
