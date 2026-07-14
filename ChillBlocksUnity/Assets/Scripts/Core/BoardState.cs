@@ -54,6 +54,46 @@ namespace ChillBlocks.Core
             return true;
         }
 
+        /// <summary>
+        /// targetRow/targetColにそのまま置ければそこを返す。置けなければ、そこから近い順に
+        /// リング状（Chebyshev距離1, 2, ...）に周囲を探索し、最初に見つかった配置可能なマスを返す。
+        /// 見つからなければfalse（実機フィードバック：「置けない位置ではゴーストを出さず、
+        /// 近くに置ける場所があればそこにスナップしてほしい」に対応）。
+        /// </summary>
+        public bool TryFindNearbyValidPlacement(PieceDefinitions.Definition piece, int targetRow, int targetCol, int maxRadius, out int foundRow, out int foundCol)
+        {
+            if (CanPlace(piece, targetRow, targetCol))
+            {
+                foundRow = targetRow;
+                foundCol = targetCol;
+                return true;
+            }
+
+            for (int radius = 1; radius <= maxRadius; radius++)
+            {
+                for (int dr = -radius; dr <= radius; dr++)
+                {
+                    for (int dc = -radius; dc <= radius; dc++)
+                    {
+                        if (Mathf.Max(Mathf.Abs(dr), Mathf.Abs(dc)) != radius) continue; // このリング上のマスのみ（内側は探索済み）
+
+                        int r = targetRow + dr;
+                        int c = targetCol + dc;
+                        if (CanPlace(piece, r, c))
+                        {
+                            foundRow = r;
+                            foundCol = c;
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            foundRow = -1;
+            foundCol = -1;
+            return false;
+        }
+
         public bool HasAnyValidPlacement(PieceDefinitions.Definition piece)
         {
             int rows = piece.Rows;

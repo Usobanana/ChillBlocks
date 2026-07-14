@@ -1,0 +1,41 @@
+/* Unity既定WebGLテンプレートのstyle.cssを土台に、キャンバスを常に9:16(1080:1920)の
+   アスペクト比に固定してレターボックス/ピラーボックス（黒帯）表示する挙動を追加したもの。
+   PC等の横長ブラウザで画面いっぱいに間延びして表示され、UI Toolkit側のレイアウトが
+   崩れる問題（実機フィードバック）への対応。 */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+}
+
+#unity-container {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+#unity-canvas {
+  background: #000;
+  display: block;
+}
+
+#unity-loading-bar { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: none }
+#unity-logo { width: 154px; height: 130px; background: url('TemplateData/unity-logo-dark.png') no-repeat center }
+#unity-progress-bar-empty { width: 141px; height: 18px; margin-top: 10px; margin-left: 6.5px; background: url('TemplateData/progress-bar-empty-dark.png') no-repeat center }
+#unity-progress-bar-full { width: 0%; height: 18px; margin-top: 10px; background: url('TemplateData/progress-bar-full-dark.png') no-repeat center }
+#unity-footer { position: absolute; left: 0; right: 0; bottom: 0; }
+.unity-mobile #unity-footer { display: none }
+#unity-logo-title-footer { float:left; width: 102px; height: 38px; background: url('TemplateData/unity-logo-title-footer.png') no-repeat center }
+#unity-build-title { float: right; margin-right: 10px; line-height: 38px; font-family: arial; font-size: 18px; color: #fff; }
+#unity-fullscreen-button { cursor:pointer; float: right; width: 38px; height: 38px; background: url('TemplateData/fullscreen-button.png') no-repeat center }
+#unity-warning { position: absolute; left: 50%; top: 5%; transform: translate(-50%); background: white; padding: 10px; display: none }

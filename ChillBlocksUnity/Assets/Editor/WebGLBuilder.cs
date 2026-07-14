@@ -35,6 +35,10 @@ public class WebGLBuilder
         // GitHub Pages向けに圧縮を無効化（解凍ヘッダー不整合によるWebGL起動エラーを防止）
         PlayerSettings.WebGL.compressionFormat = WebGLCompressionFormat.Disabled;
 
+        // 9:16固定レターボックス表示のカスタムテンプレート（Assets/WebGLTemplates/ChillBlocks）。
+        // 横長ブラウザでUIが間延びして崩れる問題への対応。
+        PlayerSettings.WebGL.template = "PROJECT:ChillBlocks";
+
         BuildPlayerOptions options = new BuildPlayerOptions();
         options.scenes = new[] { "Assets/Scenes/GameScene.unity" };
         options.locationPathName = buildPath;

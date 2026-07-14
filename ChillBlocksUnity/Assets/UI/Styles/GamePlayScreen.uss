@@ -38,10 +38,6 @@
     background-color: var(--color-success);
 }
 
-.board-cell-preview-bad {
-    background-color: var(--color-danger);
-}
-
 .reaction-label {
     position: absolute;
     top: 22%;

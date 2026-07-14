@@ -35,6 +35,12 @@ namespace ChillBlocks.Core
             PlaySynth(880f, 0.3f, 4f, 0.6f);
         }
 
+        /// <summary>ドラッグ中、配置可能な位置にスナップした瞬間の短い「チッ」音。</summary>
+        public void PlaySnapTick()
+        {
+            PlaySynth(1200f, 0.05f, 30f, 0.4f);
+        }
+
         private void PlaySynth(float frequency, float duration, float decay, float volume)
         {
             _sfxSource.PlayOneShot(GenerateSynthSound(frequency, duration, decay), volume);

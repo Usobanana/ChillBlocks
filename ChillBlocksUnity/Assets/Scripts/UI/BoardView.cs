@@ -101,15 +101,18 @@ namespace ChillBlocks.UI
                 for (int c = 0; c < BoardState.Size; c++)
                 {
                     _cells[r, c].RemoveFromClassList("board-cell-preview-ok");
-                    _cells[r, c].RemoveFromClassList("board-cell-preview-bad");
                 }
             }
         }
 
-        public void ShowPreview(PieceDefinitions.Definition piece, int originRow, int originCol, bool valid)
+        /// <summary>
+        /// 配置可能な位置のプレビュー表示。実機フィードバックにより、置けない位置は
+        /// そもそも呼び出し側（ScreenManager）でスナップ探索して除外するため、常に
+        /// 「配置可能」の見た目（緑）のみを表示する。
+        /// </summary>
+        public void ShowPreview(PieceDefinitions.Definition piece, int originRow, int originCol)
         {
             ClearPreview();
-            string cls = valid ? "board-cell-preview-ok" : "board-cell-preview-bad";
 
             for (int r = 0; r < piece.Rows; r++)
             {
@@ -119,7 +122,7 @@ namespace ChillBlocks.UI
                     int rr = originRow + r;
                     int cc = originCol + c;
                     if (rr < 0 || cc < 0 || rr >= BoardState.Size || cc >= BoardState.Size) continue;
-                    _cells[rr, cc].AddToClassList(cls);
+                    _cells[rr, cc].AddToClassList("board-cell-preview-ok");
                 }
             }
         }

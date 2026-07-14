@@ -253,27 +253,47 @@ namespace ChillBlocks.UI
 
         // ---- ドラッグ&ドロップ（PieceTrayView発火 → BoardViewでヒットテスト → GameManagerで配置判定） ----
 
+        // ポインターが指すマスにそのまま置けない時、近くの置ける場所へスナップする探索半径。
+        private const int SnapSearchRadius = 2;
+
+        private bool _snapGhostVisible;
+
         private void OnPieceDragStarted(int handIndex, Vector2 panelPosition)
         {
             _draggingHandIndex = handIndex;
+            _snapGhostVisible = false;
         }
 
         private void OnPieceDragMoved(Vector2 panelPosition)
         {
             if (_draggingHandIndex < 0 || _boardView == null) return;
 
+            bool foundSnap = false;
             var localPoint = _boardView.Container.WorldToLocal(panelPosition);
             if (_boardView.TryGetCellAtLocalPoint(localPoint, out int row, out int col))
             {
                 var piece = _gameManager.Hand[_draggingHandIndex];
                 GetOriginForCenteredDrag(piece, row, col, out int originRow, out int originCol);
-                bool valid = _gameManager.Board.CanPlace(piece, originRow, originCol);
-                _boardView.ShowPreview(piece, originRow, originCol, valid);
+
+                if (_gameManager.Board.TryFindNearbyValidPlacement(piece, originRow, originCol, SnapSearchRadius, out int snapRow, out int snapCol))
+                {
+                    foundSnap = true;
+                    _boardView.ShowPreview(piece, snapRow, snapCol);
+                }
             }
-            else
+
+            if (!foundSnap)
             {
                 _boardView.ClearPreview();
             }
+
+            // 置ける場所が見つかった瞬間（無し→ありに変わった瞬間）だけ振動+SEを鳴らす。
+            if (foundSnap && !_snapGhostVisible)
+            {
+                SoundManager.Instance?.PlaySnapTick();
+                Haptics.Tick();
+            }
+            _snapGhostVisible = foundSnap;
         }
 
         private void OnPieceDragEnded(Vector2 panelPosition)
@@ -286,13 +306,16 @@ namespace ChillBlocks.UI
             {
                 var piece = _gameManager.Hand[_draggingHandIndex];
                 GetOriginForCenteredDrag(piece, row, col, out int originRow, out int originCol);
-                if (_gameManager.TryPlacePiece(_draggingHandIndex, originRow, originCol))
+
+                if (_gameManager.Board.TryFindNearbyValidPlacement(piece, originRow, originCol, SnapSearchRadius, out int snapRow, out int snapCol)
+                    && _gameManager.TryPlacePiece(_draggingHandIndex, snapRow, snapCol))
                 {
                     SoundManager.Instance?.PlayPlace();
                 }
             }
 
             _draggingHandIndex = -1;
+            _snapGhostVisible = false;
             RefreshGamePlayUI();
         }
 
