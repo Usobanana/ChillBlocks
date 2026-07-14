@@ -41,6 +41,10 @@ namespace ChillBlocks.UI
         private Label _reactionLabel;
         private Coroutine _reactionRoutine;
         private int _draggingHandIndex = -1;
+        private int _lastSnapRow = -1;
+        private int _lastSnapCol = -1;
+        private int _displayedScore = 0;
+        private Coroutine _scoreAnimRoutine;
 
         private void Awake()
         {
@@ -119,6 +123,8 @@ namespace ChillBlocks.UI
             _continueButton.clicked += OnContinueClicked;
 
             _adManager.ResetRunState();
+            _displayedScore = 0;
+            if (_scoreAnimRoutine != null) { StopCoroutine(_scoreAnimRoutine); _scoreAnimRoutine = null; }
             _gameManager.StartNewGame();
             RefreshGamePlayUI();
         }
@@ -133,6 +139,8 @@ namespace ChillBlocks.UI
         {
             _gameOverPanel.style.display = DisplayStyle.None;
             _adManager.ResetRunState();
+            _displayedScore = 0;
+            if (_scoreAnimRoutine != null) { StopCoroutine(_scoreAnimRoutine); _scoreAnimRoutine = null; }
             _gameManager.StartNewGame();
             RefreshGamePlayUI();
         }
@@ -159,7 +167,10 @@ namespace ChillBlocks.UI
 
             _boardView.Refresh(_gameManager.Board);
             _trayView.Build(_gameManager.Hand, _gameManager.IsHandSlotUsed);
-            _scoreLabel.text = $"Score {_gameManager.Score}";
+            _displayedScore = _gameManager.Score;
+            if (_scoreAnimRoutine != null) { StopCoroutine(_scoreAnimRoutine); _scoreAnimRoutine = null; }
+            _scoreLabel.text = $"Score {_displayedScore}";
+            _scoreLabel.transform.scale = Vector3.one;
             _bestLabel.text = $"Best {_gameManager.BestScore}";
         }
 
@@ -168,8 +179,48 @@ namespace ChillBlocks.UI
         private void HandleScoreChanged()
         {
             if (_currentScreen != Screen.GamePlay || _scoreLabel == null) return;
-            _scoreLabel.text = $"Score {_gameManager.Score}";
             _bestLabel.text = $"Best {_gameManager.BestScore}";
+
+            if (_scoreAnimRoutine != null)
+            {
+                StopCoroutine(_scoreAnimRoutine);
+            }
+            _scoreAnimRoutine = StartCoroutine(ScoreAnimationRoutine(_gameManager.Score));
+        }
+
+        private IEnumerator ScoreAnimationRoutine(int targetScore)
+        {
+            int startScore = _displayedScore;
+            const float duration = 0.4f;
+            float elapsed = 0f;
+            const float maxScale = 1.25f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                _displayedScore = Mathf.RoundToInt(Mathf.Lerp(startScore, targetScore, t));
+                _scoreLabel.text = $"Score {_displayedScore}";
+
+                float scale;
+                if (t < 0.25f)
+                {
+                    scale = Mathf.Lerp(1.0f, maxScale, t / 0.25f);
+                }
+                else
+                {
+                    scale = Mathf.Lerp(maxScale, 1.0f, (t - 0.25f) / 0.75f);
+                }
+                _scoreLabel.transform.scale = new Vector3(scale, scale, 1f);
+
+                yield return null;
+            }
+
+            _displayedScore = targetScore;
+            _scoreLabel.text = $"Score {_displayedScore}";
+            _scoreLabel.transform.scale = Vector3.one;
+            _scoreAnimRoutine = null;
         }
 
         private void HandleHandRefilled()
@@ -190,7 +241,7 @@ namespace ChillBlocks.UI
             if (string.IsNullOrEmpty(text)) return;
 
             if (_reactionRoutine != null) StopCoroutine(_reactionRoutine);
-            _reactionRoutine = StartCoroutine(ShowReactionRoutine(text));
+            _reactionRoutine = StartCoroutine(ShowReactionRoutine(text, lines, _gameManager.Combo, allClear));
         }
 
         private void HandleCellsCleared(IReadOnlyList<ClearedCell> cells)
@@ -199,42 +250,72 @@ namespace ChillBlocks.UI
             _boardView.PlayClearEffect(cells);
         }
 
-        private IEnumerator ShowReactionRoutine(string text)
+        private IEnumerator ShowReactionRoutine(string text, int lines, int combo, bool allClear)
         {
             const float popDuration = 0.15f;
             const float holdDuration = 0.5f;
-            const float fadeDuration = 0.25f;
+            const float fadeDuration = 0.3f;
+            const float totalDuration = popDuration + holdDuration + fadeDuration;
 
             _reactionLabel.text = text;
             _reactionLabel.style.display = DisplayStyle.Flex;
             _reactionLabel.style.opacity = 1f;
 
+            // コンボやPerfectによる強調の決定
+            bool isHighCombo = combo >= 3;
+            bool isSpecial = isHighCombo || allClear || lines >= 3;
+
+            Color normalColor = new Color32(241, 238, 251, 255); // --color-text
+            Color specialColor = new Color32(248, 233, 161, 255); // --color-accent
+            _reactionLabel.style.color = isSpecial ? specialColor : normalColor;
+
+            float baseTargetScale = isSpecial ? 1.3f : 1.0f;
+            float startScale = baseTargetScale * 0.6f;
+
             float elapsed = 0f;
-            while (elapsed < popDuration)
+            while (elapsed < totalDuration)
             {
                 elapsed += Time.deltaTime;
-                float t = Mathf.Clamp01(elapsed / popDuration);
-                const float overshoot = 1.70158f;
-                float tt = t - 1f;
-                float eased = tt * tt * ((overshoot + 1f) * tt + overshoot) + 1f;
-                float scale = Mathf.LerpUnclamped(0.6f, 1f, eased);
-                _reactionLabel.transform.scale = new Vector3(scale, scale, 1f);
-                yield return null;
-            }
-            _reactionLabel.transform.scale = Vector3.one;
 
-            yield return new WaitForSeconds(holdDuration);
+                // フローティング（上昇）：0px から -100px まで（Yマイナスが上方向）
+                float floatProgress = elapsed / totalDuration;
+                float currentY = Mathf.Lerp(0f, -100f, EaseOutQuad(floatProgress));
+                _reactionLabel.transform.position = new Vector3(0f, currentY, 0f);
 
-            elapsed = 0f;
-            while (elapsed < fadeDuration)
-            {
-                elapsed += Time.deltaTime;
-                _reactionLabel.style.opacity = 1f - Mathf.Clamp01(elapsed / fadeDuration);
+                if (elapsed < popDuration)
+                {
+                    float t = elapsed / popDuration;
+                    const float overshoot = 1.70158f;
+                    float tt = t - 1f;
+                    float eased = tt * tt * ((overshoot + 1f) * tt + overshoot) + 1f;
+                    float scale = Mathf.LerpUnclamped(startScale, baseTargetScale, eased);
+                    _reactionLabel.transform.scale = new Vector3(scale, scale, 1f);
+                }
+                else if (elapsed < popDuration + holdDuration)
+                {
+                    _reactionLabel.transform.scale = new Vector3(baseTargetScale, baseTargetScale, 1f);
+                }
+                else
+                {
+                    float t = (elapsed - popDuration - holdDuration) / fadeDuration;
+                    _reactionLabel.style.opacity = 1f - Mathf.Clamp01(t);
+                    float scale = Mathf.Lerp(baseTargetScale, baseTargetScale * 0.8f, t);
+                    _reactionLabel.transform.scale = new Vector3(scale, scale, 1f);
+                }
+
                 yield return null;
             }
 
             _reactionLabel.style.display = DisplayStyle.None;
+            _reactionLabel.transform.position = Vector3.zero;
+            _reactionLabel.transform.scale = Vector3.one;
+            _reactionLabel.style.opacity = 1f;
             _reactionRoutine = null;
+        }
+
+        private static float EaseOutQuad(float t)
+        {
+            return 1f - (1f - t) * (1f - t);
         }
 
         private void HandleGameOver()
@@ -262,6 +343,8 @@ namespace ChillBlocks.UI
         {
             _draggingHandIndex = handIndex;
             _snapGhostVisible = false;
+            _lastSnapRow = -1;
+            _lastSnapCol = -1;
         }
 
         private void OnPieceDragMoved(Vector2 panelPosition)
@@ -269,13 +352,15 @@ namespace ChillBlocks.UI
             if (_draggingHandIndex < 0 || _boardView == null) return;
 
             bool foundSnap = false;
+            int snapRow = -1;
+            int snapCol = -1;
             var localPoint = _boardView.Container.WorldToLocal(panelPosition);
             if (_boardView.TryGetCellAtLocalPoint(localPoint, out int row, out int col))
             {
                 var piece = _gameManager.Hand[_draggingHandIndex];
                 GetOriginForCenteredDrag(piece, row, col, out int originRow, out int originCol);
 
-                if (_gameManager.Board.TryFindNearbyValidPlacement(piece, originRow, originCol, SnapSearchRadius, out int snapRow, out int snapCol))
+                if (_gameManager.Board.TryFindNearbyValidPlacement(piece, originRow, originCol, SnapSearchRadius, out snapRow, out snapCol))
                 {
                     foundSnap = true;
                     _boardView.ShowPreview(piece, snapRow, snapCol);
@@ -287,11 +372,21 @@ namespace ChillBlocks.UI
                 _boardView.ClearPreview();
             }
 
-            // 置ける場所が見つかった瞬間（無し→ありに変わった瞬間）だけ振動+SEを鳴らす。
-            if (foundSnap && !_snapGhostVisible)
+            // 置ける場所が見つかった瞬間（無し→あり）、または置ける場所の位置が変わった瞬間に振動+SEを鳴らす。
+            if (foundSnap)
             {
-                SoundManager.Instance?.PlaySnapTick();
-                Haptics.Tick();
+                if (!_snapGhostVisible || snapRow != _lastSnapRow || snapCol != _lastSnapCol)
+                {
+                    SoundManager.Instance?.PlaySnapTick();
+                    Haptics.Tick();
+                }
+                _lastSnapRow = snapRow;
+                _lastSnapCol = snapCol;
+            }
+            else
+            {
+                _lastSnapRow = -1;
+                _lastSnapCol = -1;
             }
             _snapGhostVisible = foundSnap;
         }
@@ -302,21 +397,34 @@ namespace ChillBlocks.UI
 
             _boardView.ClearPreview();
             var localPoint = _boardView.Container.WorldToLocal(panelPosition);
+            bool placed = false;
+            int snapRow = -1;
+            int snapCol = -1;
+            PieceDefinitions.Definition piece = default;
+
             if (_boardView.TryGetCellAtLocalPoint(localPoint, out int row, out int col))
             {
-                var piece = _gameManager.Hand[_draggingHandIndex];
+                piece = _gameManager.Hand[_draggingHandIndex];
                 GetOriginForCenteredDrag(piece, row, col, out int originRow, out int originCol);
 
-                if (_gameManager.Board.TryFindNearbyValidPlacement(piece, originRow, originCol, SnapSearchRadius, out int snapRow, out int snapCol)
+                if (_gameManager.Board.TryFindNearbyValidPlacement(piece, originRow, originCol, SnapSearchRadius, out snapRow, out snapCol)
                     && _gameManager.TryPlacePiece(_draggingHandIndex, snapRow, snapCol))
                 {
                     SoundManager.Instance?.PlayPlace();
+                    placed = true;
                 }
             }
 
             _draggingHandIndex = -1;
             _snapGhostVisible = false;
+            _lastSnapRow = -1;
+            _lastSnapCol = -1;
             RefreshGamePlayUI();
+
+            if (placed)
+            {
+                _boardView.PlayPlaceEffect(piece, snapRow, snapCol);
+            }
         }
 
         /// <summary>

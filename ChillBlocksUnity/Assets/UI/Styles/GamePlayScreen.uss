@@ -36,6 +36,20 @@
 
 .board-cell-preview-ok {
     background-color: var(--color-success);
+    animation-name: pulse-anim;
+    animation-duration: 0.6s;
+    animation-iteration-count: infinite;
+    animation-direction: alternate;
+    animation-timing-function: ease-in-out;
+}
+
+@keyframes pulse-anim {
+    from {
+        opacity: 0.55;
+    }
+    to {
+        opacity: 0.95;
+    }
 }
 
 .reaction-label {

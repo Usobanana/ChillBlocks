@@ -21,6 +21,22 @@ namespace ChillBlocks.Core
             DontDestroyOnLoad(gameObject);
             _sfxSource = gameObject.AddComponent<AudioSource>();
             _sfxSource.playOnAwake = false;
+
+            // AudioListenerがシーン内に存在しない場合は自動的にアタッチする
+            if (FindAnyObjectByType<AudioListener>() == null)
+            {
+                var cam = Camera.main;
+                if (cam != null)
+                {
+                    cam.gameObject.AddComponent<AudioListener>();
+                    Debug.Log("SoundManager: Added AudioListener to Main Camera automatically.");
+                }
+                else
+                {
+                    gameObject.AddComponent<AudioListener>();
+                    Debug.Log("SoundManager: Added AudioListener to SoundManager automatically (No Main Camera found).");
+                }
+            }
         }
 
         /// <summary>ピース配置時のクリック音。</summary>

@@ -158,11 +158,118 @@ namespace ChillBlocks.UI
             }
 
             yield return ScalePopRoutine(cell);
+            SpawnParticles(cell, color);
             yield return ScaleFadeOutRoutine(cell);
 
             cell.style.backgroundColor = StyleKeyword.Null;
             cell.transform.scale = Vector3.one;
             cell.style.opacity = 1f;
+        }
+
+        private void SpawnParticles(VisualElement cell, Color color)
+        {
+            if (_container == null || _host == null) return;
+
+            Vector2 cellCenter = cell.worldBound.center;
+            Vector2 localCenter = _container.WorldToLocal(cellCenter);
+
+            int particleCount = 6;
+            for (int i = 0; i < particleCount; i++)
+            {
+                var p = new VisualElement();
+                p.style.position = Position.Absolute;
+                p.style.backgroundColor = color;
+                
+                float size = Random.Range(6f, 12f);
+                p.style.width = size;
+                p.style.height = size;
+
+
+                float startLeft = localCenter.x - size / 2f;
+                float startTop = localCenter.y - size / 2f;
+                p.style.left = startLeft;
+                p.style.top = startTop;
+
+                _container.Add(p);
+
+                float angle = Random.Range(0f, Mathf.PI * 2f);
+                float speed = Random.Range(100f, 250f);
+                Vector2 velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * speed;
+                
+                _host.StartCoroutine(AnimateParticleRoutine(p, new Vector2(startLeft, startTop), velocity));
+            }
+        }
+
+        private IEnumerator AnimateParticleRoutine(VisualElement p, Vector2 startPos, Vector2 velocity)
+        {
+            float duration = Random.Range(0.25f, 0.45f);
+            float elapsed = 0f;
+
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / duration);
+
+                Vector2 currentPos = startPos + velocity * elapsed;
+                currentPos.y += 120f * t * t; // 重力効果
+
+                p.style.left = currentPos.x;
+                p.style.top = currentPos.y;
+
+                p.style.opacity = 1f - t;
+                float scale = 1f - t;
+                p.transform.scale = new Vector3(scale, scale, 1f);
+
+                yield return null;
+            }
+
+            p.RemoveFromHierarchy();
+        }
+
+        public void PlayPlaceEffect(PieceDefinitions.Definition piece, int originRow, int originCol)
+        {
+            if (_host == null) return;
+
+            for (int r = 0; r < piece.Rows; r++)
+            {
+                for (int c = 0; c < piece.Cols; c++)
+                {
+                    if (!piece.Cells[r, c]) continue;
+                    int rr = originRow + r;
+                    int cc = originCol + c;
+                    if (rr < 0 || cc < 0 || rr >= BoardState.Size || cc >= BoardState.Size) continue;
+
+                    var element = _cells[rr, cc];
+                    _host.StartCoroutine(PlaceCellBounceRoutine(element));
+                }
+            }
+        }
+
+        private IEnumerator PlaceCellBounceRoutine(VisualElement cell)
+        {
+            const float bounceDuration = 0.15f;
+            float elapsed = 0f;
+            const float maxScale = 1.15f;
+
+            while (elapsed < bounceDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / bounceDuration);
+                
+                float scale;
+                if (t < 0.5f)
+                {
+                    scale = Mathf.Lerp(1.0f, maxScale, t / 0.5f);
+                }
+                else
+                {
+                    scale = Mathf.Lerp(maxScale, 1.0f, (t - 0.5f) / 0.5f);
+                }
+                cell.transform.scale = new Vector3(scale, scale, 1f);
+                yield return null;
+            }
+
+            cell.transform.scale = Vector3.one;
         }
 
         private static IEnumerator ScalePopRoutine(VisualElement element)
