@@ -135,16 +135,7 @@ namespace ChillBlocks.Core
             OnGameOver.Invoke();
         }
 
-        /// <summary>Continue（リワード広告視聴）: 手持ち3ピースだけ入れ替えて復帰する。</summary>
-        public void ContinueAfterAd()
-        {
-            if (State != GameState.GameOver) return;
 
-            Hand = HandGenerator.GenerateHand(_random);
-            _handUsed = new bool[HandGenerator.HandSize];
-            State = GameState.Playing;
-            OnHandRefilled.Invoke();
-        }
 
         public void ReturnToTitle()
         {

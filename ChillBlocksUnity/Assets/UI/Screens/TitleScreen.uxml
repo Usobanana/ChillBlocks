@@ -1,17 +1,20 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <Style src="project://database/Assets/UI/Styles/Common.uss" />
     <Style src="project://database/Assets/UI/Styles/TitleScreen.uss" />
-
+ 
     <ui:VisualElement name="title-screen" class="screen">
         <ui:VisualElement class="title-content">
             <ui:Label text="ChillBlocks" class="title-logo-main text-outline" />
             <ui:Label text="LO-FI BLOCK PUZZLE" class="title-logo-sub text-outline" />
         </ui:VisualElement>
-
+ 
         <ui:Label name="best-score-label" text="" class="best-score-label text-outline" />
-
+ 
         <ui:Button name="btn-play" text="Play" class="btn btn-lg btn-cta" />
-
+ 
         <ui:Label name="version-label" text="" class="version-label text-outline" />
+        
+        <!-- 設定ボタンを「Settings」テキストの標準ボタン（ホバー・クリック効果あり）に変更 -->
+        <ui:Button name="btn-settings" text="Settings" class="btn btn-sm" style="position: absolute; top: 24px; right: 24px; width: 120px; height: 36px; font-size: 16px; z-index: 999;" />
     </ui:VisualElement>
 </ui:UXML>

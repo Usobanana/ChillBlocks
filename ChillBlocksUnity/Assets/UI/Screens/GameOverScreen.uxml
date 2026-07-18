@@ -1,0 +1,23 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/UI/Styles/Common.uss" />
+    <Style src="project://database/Assets/UI/Styles/GamePlayScreen.uss" />
+
+    <ui:VisualElement name="gameover-screen" class="screen">
+         <ui:Label text="GAME OVER" class="result-title-gameover text-outline" />
+         
+         <!-- 新規: ハイスコア更新時のお祝いメッセージ -->
+         <ui:Label name="congrats-label" text="NEW BEST SCORE!" class="congrats-title text-outline" style="display: none;" />
+
+         <!-- 今回のスコア（巨大表示） -->
+         <ui:Label name="gameover-score-label" text="0" class="gameover-large-score text-outline" />
+
+         <!-- Bestスコア（小さく表示） -->
+         <ui:Label name="gameover-best-label" text="Best: 0" class="gameover-best-score text-outline" />
+
+         <!-- ボタンコンテナ（演出完了後に表示） -->
+         <ui:VisualElement name="gameover-buttons" class="result-buttons" style="display: none;">
+             <ui:Button name="btn-retry" text="Retry" class="btn btn-primary-size" />
+             <ui:Button name="btn-home-gameover" text="Home" class="btn btn-primary-size btn-secondary" />
+         </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

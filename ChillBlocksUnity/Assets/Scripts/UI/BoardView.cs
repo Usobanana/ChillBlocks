@@ -149,7 +149,7 @@ namespace ChillBlocks.UI
         {
             // Refresh()が先に呼ばれて空欄色になっていても、演出の間だけは消える瞬間の色を再現する。
             cell.style.backgroundColor = color;
-            cell.transform.scale = Vector3.one;
+            cell.style.scale = new Scale(Vector3.one);
             cell.style.opacity = 1f;
 
             if (delay > 0f)
@@ -162,7 +162,7 @@ namespace ChillBlocks.UI
             yield return ScaleFadeOutRoutine(cell);
 
             cell.style.backgroundColor = StyleKeyword.Null;
-            cell.transform.scale = Vector3.one;
+            cell.style.scale = new Scale(Vector3.one);
             cell.style.opacity = 1f;
         }
 
@@ -218,7 +218,7 @@ namespace ChillBlocks.UI
 
                 p.style.opacity = 1f - t;
                 float scale = 1f - t;
-                p.transform.scale = new Vector3(scale, scale, 1f);
+                p.style.scale = new Scale(new Vector3(scale, scale, 1f));
 
                 yield return null;
             }
@@ -265,11 +265,11 @@ namespace ChillBlocks.UI
                 {
                     scale = Mathf.Lerp(maxScale, 1.0f, (t - 0.5f) / 0.5f);
                 }
-                cell.transform.scale = new Vector3(scale, scale, 1f);
+                cell.style.scale = new Scale(new Vector3(scale, scale, 1f));
                 yield return null;
             }
 
-            cell.transform.scale = Vector3.one;
+            cell.style.scale = new Scale(Vector3.one);
         }
 
         private static IEnumerator ScalePopRoutine(VisualElement element)
@@ -280,10 +280,10 @@ namespace ChillBlocks.UI
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / PopDuration);
                 float scale = Mathf.LerpUnclamped(1f, PopScale, EaseOutBack(t));
-                element.transform.scale = new Vector3(scale, scale, 1f);
+                element.style.scale = new Scale(new Vector3(scale, scale, 1f));
                 yield return null;
             }
-            element.transform.scale = new Vector3(PopScale, PopScale, 1f);
+            element.style.scale = new Scale(new Vector3(PopScale, PopScale, 1f));
         }
 
         private static IEnumerator ScaleFadeOutRoutine(VisualElement element)
@@ -294,7 +294,7 @@ namespace ChillBlocks.UI
                 elapsed += Time.deltaTime;
                 float t = Mathf.Clamp01(elapsed / VanishDuration);
                 float scale = Mathf.Lerp(PopScale, 0f, t);
-                element.transform.scale = new Vector3(scale, scale, 1f);
+                element.style.scale = new Scale(new Vector3(scale, scale, 1f));
                 element.style.opacity = 1f - t;
                 yield return null;
             }

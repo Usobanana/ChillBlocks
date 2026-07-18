@@ -1,0 +1,8 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/UI/Styles/Common.uss" />
+    <Style src="project://database/Assets/UI/Styles/GamePlayScreen.uss" />
+    
+    <ui:VisualElement class="screen screen-center" style="background-color: rgb(40, 40, 69); justify-content: center; align-items: center;">
+        <ui:Label text="FROM SCRATCH STUDIO" class="text-outline" style="font-size: 36px; -unity-font-style: bold; color: rgb(248, 233, 161); letter-spacing: 2px;" />
+    </ui:VisualElement>
+</ui:UXML>

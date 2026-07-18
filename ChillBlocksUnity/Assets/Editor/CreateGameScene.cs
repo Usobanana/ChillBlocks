@@ -48,6 +48,8 @@ namespace ChillBlocks.EditorTools
             adManagerGo.transform.SetParent(managersGo.transform);
             var soundManagerGo = new GameObject("SoundManager", typeof(SoundManager));
             soundManagerGo.transform.SetParent(managersGo.transform);
+            var settingsManagerGo = new GameObject("SettingsManager", typeof(SettingsManager));
+            settingsManagerGo.transform.SetParent(managersGo.transform);
 
             var gameManager = gameManagerGo.GetComponent<GameManager>();
             var adManager = adManagerGo.GetComponent<AdManager>();
@@ -56,17 +58,23 @@ namespace ChillBlocks.EditorTools
             var panelSettings = CreateOrLoadPanelSettings();
 
             // ---- UIToolkit ----
-            var uiToolkitGo = new GameObject("[UIToolkit]", typeof(UIDocument), typeof(ScreenManager));
+            var uiToolkitGo = new GameObject("[UIToolkit]", typeof(UIDocument), typeof(ScreenManager), typeof(SafeAreaHelper));
             var uiDocument = uiToolkitGo.GetComponent<UIDocument>();
             uiDocument.panelSettings = panelSettings;
 
             var titleUxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/Screens/TitleScreen.uxml");
             var gamePlayUxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/Screens/GamePlayScreen.uxml");
+            var gameOverUxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/Screens/GameOverScreen.uxml");
+            var companySplashUxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/Screens/CompanySplash.uxml");
+            var settingsDialogUxml = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>("Assets/UI/Screens/SettingsDialog.uxml");
 
             var screenManager = uiToolkitGo.GetComponent<ScreenManager>();
             var so = new SerializedObject(screenManager);
             SetRef(so, "_titleScreen", titleUxml);
             SetRef(so, "_gamePlayScreen", gamePlayUxml);
+            SetRef(so, "_gameOverScreen", gameOverUxml);
+            SetRef(so, "_companySplash", companySplashUxml);
+            SetRef(so, "_settingsDialog", settingsDialogUxml);
             SetRef(so, "_gameManager", gameManager);
             SetRef(so, "_adManager", adManager);
             so.ApplyModifiedPropertiesWithoutUndo();

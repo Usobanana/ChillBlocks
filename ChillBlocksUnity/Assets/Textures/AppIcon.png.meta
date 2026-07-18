@@ -1,0 +1,110 @@
+fileFormatVersion: 2
+guid: 2ab00c436814dbd42a98cb9bf9bf9b9b
+TextureImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 12
+  mipmaps:
+    mipMapMode: 0
+    enableMipMap: 0
+    sRGBTexture: 1
+    linearTexture: 0
+    fadeOut: 0
+    borderMipMap: 0
+    mipMapsPreserveCoverage: 0
+    alphaTestReferenceValue: 0.5
+    mipMapFadeDistanceStart: 1
+    mipMapFadeDistanceEnd: 3
+  bumpmap:
+    convertToNormalMap: 0
+    externalNormalMap: 0
+    heightScale: 0.25
+    normalMapFilter: 0
+  isReadable: 0
+  streamingMipmaps: 0
+  streamingMipmapsPriority: 0
+  vTOnly: 0
+  ignorePngAlpha: 0
+  grayScaleToAlpha: 0
+  generateAlphaFromGrayscale: 0
+  hideAlphaChanel: 0
+  textureType: 0
+  textureShape: 1
+  singleChannelComponent: 0
+  flipbookRows: 1
+  flipbookColumns: 1
+  maxTextureSize: 512
+  filterMode: 1
+  aniso: 1
+  mipBias: 0
+  wrapU: 1
+  wrapV: 1
+  wrapW: 1
+  convertToFormat: 0
+  externalObjects: {}
+  serializedVersion: 12
+  spriteMode: 0
+  spriteExtrude: 1
+  spriteMeshType: 1
+  alignment: 0
+  spritePivot: {x: 0.5, y: 0.5}
+  spritePixelsToUnits: 100
+  spriteBorder: {x: 0, y: 0, z: 0, w: 0}
+  spriteGenerateFallbackPhysicsShape: 1
+  alphaUsage: 1
+  alphaIsTransparency: 0
+  spriteTessellationDetail: -1
+  textureStencilCompatible: 0
+  ignorePngMipmapLimit: 0
+  enableMipFrameTexture: 0
+  rectification: 0
+  rectificationMultiplier: 1
+  rectificationOffset: 0
+  rectificationMask: 0
+  rectificationFlip: 0
+  rectificationAngle: 0
+  rectificationOffsetRotation: 0
+  rectificationScale: {x: 1, y: 1}
+  rectificationSkew: 0
+  rectificationOffsetSkew: 0
+  rectificationScaleMultiplier: 1
+  rectificationAngleMultiplier: 1
+  rectificationOffsetRotationMultiplier: 1
+  rectificationSkewMultiplier: 1
+  rectificationOffsetSkewMultiplier: 1
+  rectificationScaleMultiplierX: 1
+  rectificationScaleMultiplierY: 1
+  rectificationAngleMultiplierX: 1
+  rectificationAngleMultiplierY: 1
+  rectificationOffsetRotationMultiplierX: 1
+  rectificationOffsetRotationMultiplierY: 1
+  rectificationSkewMultiplierX: 1
+  rectificationSkewMultiplierY: 1
+  rectificationOffsetSkewMultiplierX: 1
+  rectificationOffsetSkewMultiplierY: 1
+  platformSettings: []
+  spriteSheet:
+    serializedVersion: 2
+    sprites: []
+    outline: []
+    physicsShape: []
+    bones: []
+    spriteID: 
+    internalID: 0
+    vertices: []
+    indices: []
+    edges: []
+    weights: []
+  spritePackingTag: ""
+  pSDBoundingBox:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 0
+    height: 0
+  pSDExtrudedBorder: 0
+  pSDShowGrid: 0
+  pSDRemoveBackground: 0
+  userData: ""
+  assetBundleName: ""
+  assetBundleVariant: ""

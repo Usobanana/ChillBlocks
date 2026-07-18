@@ -1,0 +1,35 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <Style src="project://database/Assets/UI/Styles/Common.uss" />
+    <Style src="project://database/Assets/UI/Styles/GamePlayScreen.uss" />
+    
+    <ui:VisualElement class="settings-overlay">
+        <ui:VisualElement class="panel settings-panel text-outline">
+            <ui:Label text="SETTINGS" class="settings-title" />
+            
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="BGM" class="settings-label" />
+                <ui:Slider name="slider-bgm" low-value="0" high-value="1" class="settings-slider" />
+            </ui:VisualElement>
+            
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="SE" class="settings-label" />
+                <ui:Slider name="slider-se" low-value="0" high-value="1" class="settings-slider" />
+            </ui:VisualElement>
+            
+            <ui:VisualElement class="settings-row">
+                <ui:Label text="Vibration" class="settings-label" />
+                <ui:VisualElement style="flex-direction: row;">
+                    <ui:Button name="btn-vibe-on" text="ON" class="btn vibe-toggle-btn" />
+                    <ui:Button name="btn-vibe-off" text="OFF" class="btn vibe-toggle-btn" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+            
+            <!-- アクションボタン領域：高さを抑えて細くしたボタンを配置 -->
+            <ui:VisualElement style="width: 100%; align-items: center; margin-top: 24px;">
+                <ui:Button name="btn-remove-ads" text="Remove Ads (¥500)" class="btn btn-accent btn-settings-action" />
+                <ui:Button name="btn-go-title" text="Return to Title" class="btn btn-settings-action" style="display: none; margin-top: 12px; background-color: rgb(217, 83, 79);" />
+                <ui:Button name="btn-close-settings" text="Close" class="btn btn-settings-action" style="margin-top: 12px;" />
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+</ui:UXML>

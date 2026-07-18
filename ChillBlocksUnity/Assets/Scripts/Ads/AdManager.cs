@@ -28,21 +28,22 @@ namespace ChillBlocks.Ads
     {
         public static AdManager Instance { get; private set; }
 
+        [Header("AdMob Settings")]
+        [Tooltip("Androidバナー広告ユニットID")]
+        [SerializeField] private string _androidBannerId = "ca-app-pub-3940256099942544/6300978111";
+
+        [Tooltip("Androidインタースティシャル広告ユニットID")]
+        [SerializeField] private string _androidInterstitialId = "ca-app-pub-3940256099942544/1033173712";
+
+        [Tooltip("iOSバナー広告ユニットID")]
+        [SerializeField] private string _iosBannerId = "ca-app-pub-3940256099942544/2934735716";
+
+        [Tooltip("iOSインタースティシャル広告ユニットID")]
+        [SerializeField] private string _iosInterstitialId = "ca-app-pub-3940256099942544/4411468910";
+
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-        // ---- AdUnit ID（テスト用ID → リリース前に本番IDに差し替え） ----
-        // iOS
-        private const string IOS_BANNER_ID        = "ca-app-pub-3940256099942544/2934735716";
-        private const string IOS_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/4411468910";
-        private const string IOS_REWARDED_ID      = "ca-app-pub-3940256099942544/1712485313";
-
-        // Android
-        private const string AND_BANNER_ID        = "ca-app-pub-3940256099942544/6300978111";
-        private const string AND_INTERSTITIAL_ID  = "ca-app-pub-3940256099942544/1033173712";
-        private const string AND_REWARDED_ID      = "ca-app-pub-3940256099942544/5224354917";
-
         private BannerView _bannerView;
         private InterstitialAd _interstitialAd;
-        private RewardedAd _rewardedAd;
 #endif
 
         // ---- Editor/非モバイルのダミー広告UI（UI Toolkit）。ScreenManagerの画面切替に巻き込まれないよう、
@@ -51,24 +52,15 @@ namespace ChillBlocks.Ads
         [SerializeField] private UIDocument _overlayDocument;
 
         // ---- 状態 ----
-        private bool _isRewardedReady;
         private bool _isInterstitialReady;
-        private Action _onRewardEarned;
         private Action _onInterstitialClosed;
 #if !(UNITY_ANDROID || UNITY_IOS) || UNITY_EDITOR
         private VisualElement _dummyBanner;
         private VisualElement _dummyInterstitial;
 #endif
 
-        // ---- インタースティシャル表示間隔制御（GS4: Game Over 3回に1回） ----
-        [SerializeField] private int _interstitialEveryNGameOvers = 3;
-        private int _gameOversSinceLastInterstitial;
 
-        // ---- GS4新規: 初回Game Over免除ガード ----
-        private bool _hasShownFirstGameOver;
 
-        // ---- GS4新規: Continue（リワード）は1プレイにつき1回まで ----
-        public bool RewardedContinueUsedThisRun { get; private set; }
 
         private void Awake()
         {
@@ -78,20 +70,16 @@ namespace ChillBlocks.Ads
             Initialize();
         }
 
-        // ---- 初期化 ----
-
         private void Initialize()
         {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             MobileAds.Initialize(initStatus =>
             {
                 Debug.Log("[AdManager] AdMob initialized");
-                LoadRewarded();
                 LoadInterstitial();
             });
 #else
             Debug.Log("[AdManager] Non-Mobile platform: AdMob initialization skipped (Mock active)");
-            _isRewardedReady = true;
             _isInterstitialReady = true;
 #endif
         }
@@ -100,9 +88,15 @@ namespace ChillBlocks.Ads
 
         public void ShowBanner()
         {
+            if (Core.SettingsManager.Instance != null && Core.SettingsManager.Instance.IsAdsRemoved)
+            {
+                HideBanner();
+                return;
+            }
+
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             string adUnitId = Application.platform == RuntimePlatform.IPhonePlayer
-                ? IOS_BANNER_ID : AND_BANNER_ID;
+                ? _iosBannerId : _androidBannerId;
 
             if (_bannerView != null)
             {
@@ -183,7 +177,7 @@ namespace ChillBlocks.Ads
             _isInterstitialReady = false;
 
             string adUnitId = Application.platform == RuntimePlatform.IPhonePlayer
-                ? IOS_INTERSTITIAL_ID : AND_INTERSTITIAL_ID;
+                ? _iosInterstitialId : _androidInterstitialId;
 
             InterstitialAd.Load(adUnitId, new AdRequest(), (ad, error) =>
             {
@@ -191,8 +185,13 @@ namespace ChillBlocks.Ads
                 _interstitialAd = ad;
                 _interstitialAd.OnAdFullScreenContentClosed += () =>
                 {
-                    _onInterstitialClosed?.Invoke();
-                    _onInterstitialClosed = null;
+                    TriggerInterstitialClosed();
+                    LoadInterstitial();
+                };
+                _interstitialAd.OnAdFullScreenContentFailedToShow += (adError) =>
+                {
+                    Debug.LogWarning($"[AdManager] Interstitial failed to show: {adError.GetMessage()}");
+                    TriggerInterstitialClosed();
                     LoadInterstitial();
                 };
                 _isInterstitialReady = true;
@@ -202,31 +201,24 @@ namespace ChillBlocks.Ads
         }
 
         /// <summary>
-        /// Game Overのたびに呼ぶ（GS4: SortGemsのOnStageCleared()を改名・移植）。
-        /// 初回Game Overは必ずスキップ（Day1離脱防止）。以降はNGame Overに1回の頻度キャップ。
+        /// Game Overの瞬間に呼び出す。
+        /// 毎回必ず全画面広告を表示し、閉じられた（あるいは準備できていなくてスキップされた）時点で onAdClosed を呼び出す。
         /// </summary>
-        public void OnGameOver()
+        public void ShowInterstitial(Action onAdClosed)
         {
-            if (!_hasShownFirstGameOver)
+            if (Core.SettingsManager.Instance != null && Core.SettingsManager.Instance.IsAdsRemoved)
             {
-                _hasShownFirstGameOver = true;
+                onAdClosed?.Invoke();
                 return;
             }
 
-            _gameOversSinceLastInterstitial++;
-            if (_gameOversSinceLastInterstitial >= _interstitialEveryNGameOvers)
-            {
-                ShowInterstitial();
-                _gameOversSinceLastInterstitial = 0;
-            }
-        }
+            _onInterstitialClosed = onAdClosed;
 
-        private void ShowInterstitial()
-        {
 #if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             if (!_isInterstitialReady || _interstitialAd == null)
             {
-                Debug.Log("[AdManager] Interstitial not ready");
+                Debug.Log("[AdManager] Interstitial not ready, calling callback immediately");
+                TriggerInterstitialClosed();
                 return;
             }
 
@@ -234,15 +226,28 @@ namespace ChillBlocks.Ads
             _isInterstitialReady = false;
 #else
             Debug.Log("[AdManager] ShowInterstitial (Mocked)");
-            CreateDummyInterstitial();
+            CreateDummyInterstitial(() =>
+            {
+                TriggerInterstitialClosed();
+            });
 #endif
         }
 
+        private void TriggerInterstitialClosed()
+        {
+            _onInterstitialClosed?.Invoke();
+            _onInterstitialClosed = null;
+        }
+
 #if !(UNITY_ANDROID || UNITY_IOS) || UNITY_EDITOR
-        private void CreateDummyInterstitial()
+        private void CreateDummyInterstitial(Action onClose)
         {
             var root = GetOverlayRoot();
-            if (root == null) return;
+            if (root == null)
+            {
+                onClose?.Invoke();
+                return;
+            }
 
             _dummyInterstitial?.RemoveFromHierarchy();
 
@@ -273,6 +278,7 @@ namespace ChillBlocks.Ads
             {
                 _dummyInterstitial?.RemoveFromHierarchy();
                 _dummyInterstitial = null;
+                onClose?.Invoke();
             })
             {
                 text = "CLOSE AD",
@@ -291,87 +297,6 @@ namespace ChillBlocks.Ads
         }
 #endif
 
-        // ---- リワード広告 ----
-
-        private void LoadRewarded()
-        {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            if (_rewardedAd != null)
-            {
-                _rewardedAd.Destroy();
-                _rewardedAd = null;
-            }
-            _isRewardedReady = false;
-
-            string adUnitId = Application.platform == RuntimePlatform.IPhonePlayer
-                ? IOS_REWARDED_ID : AND_REWARDED_ID;
-
-            RewardedAd.Load(adUnitId, new AdRequest(), (ad, error) =>
-            {
-                if (error != null) { Debug.LogWarning($"[AdManager] Rewarded load failed: {error}"); return; }
-                _rewardedAd = ad;
-                _rewardedAd.OnAdFullScreenContentClosed += () => { LoadRewarded(); };
-                _isRewardedReady = true;
-                Debug.Log("[AdManager] Rewarded loaded successfully");
-            });
-#endif
-        }
-
-        /// <summary>
-        /// リワード広告を表示する。視聴完了で onRewardEarned が呼ばれる。
-        /// 広告が準備できていない場合は onFallback（省略可）を呼ぶ。
-        /// </summary>
-        public void ShowRewardedAd(Action onRewardEarned, Action onFallback = null)
-        {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            if (!_isRewardedReady || _rewardedAd == null)
-            {
-                Debug.Log("[AdManager] Rewarded not ready, calling fallback");
-                onFallback?.Invoke();
-                return;
-            }
-
-            _onRewardEarned = onRewardEarned;
-
-            _rewardedAd.Show(reward =>
-            {
-                _onRewardEarned?.Invoke();
-                _isRewardedReady = false;
-            });
-#else
-            Debug.Log("[AdManager] ShowRewardedAd (Mocked): Automatically granting reward");
-            onRewardEarned?.Invoke();
-#endif
-        }
-
-        /// <summary>
-        /// GS4新規: Game OverのContinueボタンから呼ぶ。1プレイにつき1回まで。
-        /// 既に使用済み、または広告未準備の場合は onFallback を呼ぶ（GameOver UI側でUnavailable表示にする）。
-        /// </summary>
-        public void TryShowRewardedContinue(Action onRewardEarned, Action onFallback = null)
-        {
-            if (RewardedContinueUsedThisRun)
-            {
-                onFallback?.Invoke();
-                return;
-            }
-
-            ShowRewardedAd(
-                () =>
-                {
-                    RewardedContinueUsedThisRun = true;
-                    onRewardEarned?.Invoke();
-                },
-                onFallback);
-        }
-
-        /// <summary>新しいプレイ開始時にGameManager/UI側から呼ぶ。Continue使用済みフラグをリセットする。</summary>
-        public void ResetRunState()
-        {
-            RewardedContinueUsedThisRun = false;
-        }
-
-        public bool IsRewardedReady => _isRewardedReady;
         public bool IsInterstitialReady => _isInterstitialReady;
     }
 }
