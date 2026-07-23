@@ -1,7 +1,7 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements">
     <Style src="project://database/Assets/UI/Styles/Common.uss" />
     
-    <ui:VisualElement class="screen screen-center" style="background-color: rgb(40, 40, 69); justify-content: center; align-items: center;">
+    <ui:VisualElement class="screen screen-center" style="background-color: rgb(0, 0, 0); justify-content: center; align-items: center;">
         <ui:VisualElement class="splash-logo" />
     </ui:VisualElement>
 </ui:UXML>

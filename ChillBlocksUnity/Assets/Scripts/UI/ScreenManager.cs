@@ -718,7 +718,42 @@ namespace ChillBlocks.UI
 
         private IEnumerator CompanySplashPresentationRoutine()
         {
-            yield return new WaitForSeconds(2.0f);
+            var logo = _root.Q<VisualElement>(className: "splash-logo");
+            if (logo != null)
+            {
+                // 初期状態は透明
+                logo.style.opacity = 0f;
+
+                // 1. フェードイン (0.8s)
+                float elapsed = 0f;
+                float duration = 0.8f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    logo.style.opacity = Mathf.Clamp01(elapsed / duration);
+                    yield return null;
+                }
+                logo.style.opacity = 1f;
+
+                // 2. 表示維持 (1.0s)
+                yield return new WaitForSeconds(1.0f);
+
+                // 3. フェードアウト (0.8s)
+                elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    logo.style.opacity = Mathf.Clamp01(1f - (elapsed / duration));
+                    yield return null;
+                }
+                logo.style.opacity = 0f;
+            }
+            else
+            {
+                // ロゴが見つからない場合はフォールバックとして2秒待機
+                yield return new WaitForSeconds(2.0f);
+            }
+
             ShowTitle();
         }
 
