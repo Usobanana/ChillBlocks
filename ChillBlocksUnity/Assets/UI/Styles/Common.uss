@@ -1,8 +1,7 @@
 /* Common.uss — ChillBlocks design tokens.
-   SortGemsのCommon.uss（ボタン/パネルのクラス構造）を土台に、色トークンだけ
-   design-spec.html GS5 / SortGemsの「Cozy Lo-Fi Pixel Palette」に retune。
-   フォントはSortGems固有のCaveat-Bold参照を外し、既定フォントにフォールバックさせている
-   （Lo-Fi向けフォントは別途ComfyUI/フォント選定時に差し替え）。 */
+   SortGemsのCommon.uss（ボタン/パネルのクラス構造）を土台に、色トークンを
+   design-spec.html GS5 の「Cozy Lo-Fi Pixel Palette」に retune。
+   フォントは Press Start 2P (OFL) を .screen 経由でグローバル指定。 */
 
 :root {
     /* ===== COLOR SYSTEM（Cozy Lo-Fi Pixel Palette）===== */
@@ -63,6 +62,7 @@
     align-items: center;
     justify-content: center;
     background-color: var(--color-bg);
+    -unity-font-definition: url("project://database/Assets/Fonts/PressStart2P-Regular.ttf");
     -unity-font-style: bold;
 }
 
@@ -199,4 +199,12 @@
     width: 560px;
     font-size: 48px;
     min-height: 84px;
+}
+
+/* ===== SPLASH LOGO ===== */
+.splash-logo {
+    width: 600px;
+    height: 225px;
+    background-image: url("project://database/Assets/Textures/logo_studio.png");
+    -unity-background-scale-mode: scale-to-fit;
 }
