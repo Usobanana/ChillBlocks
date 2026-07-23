@@ -3,11 +3,19 @@
     <Style src="project://database/Assets/UI/Styles/GamePlayScreen.uss" />
  
     <ui:VisualElement name="gameplay-screen" class="screen">
-        <ui:VisualElement class="hud-top">
-            <ui:Label name="score-label" text="Score 0" class="hud-score" />
-            <ui:Label name="best-label" text="Best 0" class="hud-best" />
+        <!-- 上部中央のHUDコンテナ -->
+        <ui:VisualElement class="hud-center-container">
+            <!-- BEST SCORE (HIGHSCORE) -->
+            <ui:VisualElement class="hud-best-panel">
+                <ui:Label name="best-label" text="Best 0" class="hud-best-text text-outline" />
+            </ui:VisualElement>
+            
+            <!-- CURRENT SCORE -->
+            <ui:VisualElement class="hud-score-panel">
+                <ui:Label name="score-label" text="Score 0" class="hud-score-text text-outline" />
+            </ui:VisualElement>
         </ui:VisualElement>
- 
+
         <ui:VisualElement name="board-container" class="board-container" />
  
         <ui:Label name="reaction-label" text="" class="reaction-label text-outline" style="display: none;" />
