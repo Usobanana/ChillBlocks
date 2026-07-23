@@ -181,7 +181,7 @@ namespace ChillBlocks.UI
                 p.style.position = Position.Absolute;
                 p.style.backgroundColor = color;
                 
-                float size = Random.Range(6f, 12f);
+                float size = UnityEngine.Random.Range(6f, 12f);
                 p.style.width = size;
                 p.style.height = size;
 
@@ -193,8 +193,8 @@ namespace ChillBlocks.UI
 
                 _container.Add(p);
 
-                float angle = Random.Range(0f, Mathf.PI * 2f);
-                float speed = Random.Range(100f, 250f);
+                float angle = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
+                float speed = UnityEngine.Random.Range(100f, 250f);
                 Vector2 velocity = new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * speed;
                 
                 _host.StartCoroutine(AnimateParticleRoutine(p, new Vector2(startLeft, startTop), velocity));
@@ -203,7 +203,7 @@ namespace ChillBlocks.UI
 
         private IEnumerator AnimateParticleRoutine(VisualElement p, Vector2 startPos, Vector2 velocity)
         {
-            float duration = Random.Range(0.25f, 0.45f);
+            float duration = UnityEngine.Random.Range(0.25f, 0.45f);
             float elapsed = 0f;
 
             while (elapsed < duration)
