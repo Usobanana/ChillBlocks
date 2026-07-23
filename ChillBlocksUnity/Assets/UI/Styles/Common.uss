@@ -30,17 +30,17 @@
     --color-bar-track:       rgba(255, 255, 255, 0.15);
 
     /* ===== TYPOGRAPHY ===== */
-    --fs-display:  72px;
-    --fs-title:    48px;
-    --fs-h1:       40px;
-    --fs-h2:       32px;
-    --fs-h3:       28px;
-    --fs-body-lg:  24px;
-    --fs-body:     20px;
-    --fs-btn-lg:   40px;
-    --fs-btn-md:   26px;
-    --fs-btn-sm:   19px;
-    --fs-small:    16px;
+    --fs-display:  84px;
+    --fs-title:    56px;
+    --fs-h1:       46px;
+    --fs-h2:       38px;
+    --fs-h3:       32px;
+    --fs-body-lg:  28px;
+    --fs-body:     24px;
+    --fs-btn-lg:   48px;
+    --fs-btn-md:   32px;
+    --fs-btn-sm:   24px;
+    --fs-small:    18px;
 
     /* ===== SPACING ===== */
     --sp-xs:  4px;

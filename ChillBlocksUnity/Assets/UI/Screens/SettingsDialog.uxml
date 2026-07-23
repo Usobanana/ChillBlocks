@@ -8,12 +8,44 @@
             
             <ui:VisualElement class="settings-row">
                 <ui:Label text="BGM" class="settings-label" />
-                <ui:Slider name="slider-bgm" low-value="0" high-value="1" class="settings-slider" />
+                <ui:VisualElement style="flex-grow: 1; flex-direction: column; margin-left: 12px; margin-right: 12px;">
+                    <ui:Slider name="slider-bgm" low-value="0" high-value="1" class="settings-slider" />
+                    <ui:VisualElement class="slider-ticks">
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label name="lbl-bgm-val" text="100" class="settings-value-label" />
             </ui:VisualElement>
             
             <ui:VisualElement class="settings-row">
                 <ui:Label text="SE" class="settings-label" />
-                <ui:Slider name="slider-se" low-value="0" high-value="1" class="settings-slider" />
+                <ui:VisualElement style="flex-grow: 1; flex-direction: column; margin-left: 12px; margin-right: 12px;">
+                    <ui:Slider name="slider-se" low-value="0" high-value="1" class="settings-slider" />
+                    <ui:VisualElement class="slider-ticks">
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                        <ui:VisualElement class="slider-tick" />
+                    </ui:VisualElement>
+                </ui:VisualElement>
+                <ui:Label name="lbl-se-val" text="100" class="settings-value-label" />
             </ui:VisualElement>
             
             <ui:VisualElement class="settings-row">

@@ -215,12 +215,16 @@
 
 /* Slider Handle styling adjustments */
 .settings-slider .unity-slider__dragger {
-    width: 28px;
-    height: 28px;
-    border-radius: 14px;
-    background-color: var(--color-accent);
-    border-width: 0;
-    margin-top: -10px;
+    width: 24px;
+    height: 32px;
+    border-radius: 4px;
+    background-color: var(--color-primary);
+    border-width: 3px;
+    border-top-color: rgba(255, 255, 255, 0.55);
+    border-left-color: rgba(255, 255, 255, 0.40);
+    border-right-color: rgba(43, 30, 20, 0.65);
+    border-bottom-color: rgba(43, 30, 20, 0.75);
+    margin-top: -12px;
 }
 
 .settings-slider .unity-slider__tracker {
@@ -228,6 +232,28 @@
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.15);
     border-width: 0;
+}
+
+.slider-ticks {
+    flex-direction: row;
+    justify-content: space-between;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-top: 4px;
+}
+
+.slider-tick {
+    width: 2px;
+    height: 8px;
+    background-color: rgba(241, 238, 251, 0.35);
+}
+
+.settings-value-label {
+    width: 50px;
+    font-size: 24px;
+    color: var(--color-accent);
+    -unity-font-style: bold;
+    -unity-text-align: middle-right;
 }
 
 .vibe-toggle-btn {

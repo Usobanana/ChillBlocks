@@ -756,22 +756,29 @@ namespace ChillBlocks.UI
             var btnRemoveAds = overlay.Q<Button>("btn-remove-ads");
             var btnClose = overlay.Q<Button>("btn-close-settings");
 
+            var lblBgmVal = overlay.Q<Label>("lbl-bgm-val");
+            var lblSeVal = overlay.Q<Label>("lbl-se-val");
+
             // 初期値をセット
             if (sliderBgm != null && SettingsManager.Instance != null)
             {
                 sliderBgm.value = SettingsManager.Instance.BgmVolume;
+                if (lblBgmVal != null) lblBgmVal.text = Mathf.RoundToInt(sliderBgm.value * 100).ToString();
                 sliderBgm.RegisterValueChangedCallback(evt =>
                 {
                     SettingsManager.Instance.SetBgmVolume(evt.newValue);
+                    if (lblBgmVal != null) lblBgmVal.text = Mathf.RoundToInt(evt.newValue * 100).ToString();
                 });
             }
 
             if (sliderSe != null && SettingsManager.Instance != null)
             {
                 sliderSe.value = SettingsManager.Instance.SeVolume;
+                if (lblSeVal != null) lblSeVal.text = Mathf.RoundToInt(sliderSe.value * 100).ToString();
                 sliderSe.RegisterValueChangedCallback(evt =>
                 {
                     SettingsManager.Instance.SetSeVolume(evt.newValue);
+                    if (lblSeVal != null) lblSeVal.text = Mathf.RoundToInt(evt.newValue * 100).ToString();
                 });
             }
 
