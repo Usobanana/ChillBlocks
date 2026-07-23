@@ -54,6 +54,13 @@ namespace ChillBlocks.UI
                 if (!used)
                 {
                     slot.Add(BuildPieceElement(hand[handIndex], PieceVisual.TrayCellSize));
+
+                    // 配置不可の場合の警告表示を追加
+                    var warningLabel = new Label("❌ NO SPACE");
+                    warningLabel.AddToClassList("tray-slot-warning");
+                    warningLabel.style.display = unplaceable ? DisplayStyle.Flex : DisplayStyle.None;
+                    slot.Add(warningLabel);
+
                     slot.RegisterCallback<PointerDownEvent>(evt => OnPointerDown(evt, handIndex, slot));
                     slot.RegisterCallback<PointerMoveEvent>(evt => OnPointerMove(evt, handIndex));
                     slot.RegisterCallback<PointerUpEvent>(evt => OnPointerUp(evt, handIndex, slot));

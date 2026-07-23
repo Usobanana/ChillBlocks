@@ -347,7 +347,7 @@ namespace ChillBlocks.UI
             {
                 // 赤へフェード
                 float elapsed = 0f;
-                float duration = 0.2f;
+                float duration = 0.15f;
                 while (elapsed < duration)
                 {
                     elapsed += Time.deltaTime;
@@ -385,7 +385,7 @@ namespace ChillBlocks.UI
                 }
             }
 
-            // 最後に元の色に戻しておく
+            // 点滅完了後、一度元の色に戻す
             for (int r = 0; r < BoardState.Size; r++)
             {
                 for (int c = 0; c < BoardState.Size; c++)
@@ -397,7 +397,61 @@ namespace ChillBlocks.UI
                 }
             }
 
+            // 2. 盤面を埋め尽くすアニメーション (左上から右下へ順番に)
+            Color fillColor = new Color32(120, 35, 45, 255); // 暗いダークレッド
+            float stagger = 0.04f;
+            float maxDelay = (BoardState.Size - 1 + BoardState.Size - 1) * stagger;
+
+            for (int r = 0; r < BoardState.Size; r++)
+            {
+                for (int c = 0; c < BoardState.Size; c++)
+                {
+                    var cell = _cells[r, c];
+                    float delay = (r + c) * stagger;
+                    _host.StartCoroutine(FillCellRoutine(cell, fillColor, delay));
+                }
+            }
+
+            // すべてのセルが埋まるのを待つ (最大ディレイ + ポップ演出時間)
+            yield return new WaitForSeconds(maxDelay + 0.25f);
+
             onComplete?.Invoke();
+        }
+
+        private IEnumerator FillCellRoutine(VisualElement cell, Color color, float delay)
+        {
+            if (delay > 0f)
+            {
+                yield return new WaitForSeconds(delay);
+            }
+
+            // マスを埋め尽くしブロック化
+            cell.AddToClassList("board-cell-filled");
+            cell.style.backgroundColor = color;
+
+            // ポップアニメーション (少し膨らんで元に戻る)
+            const float popDuration = 0.15f;
+            float elapsed = 0f;
+            const float maxScale = 1.2f;
+
+            while (elapsed < popDuration)
+            {
+                elapsed += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsed / popDuration);
+                float scale;
+                if (t < 0.5f)
+                {
+                    scale = Mathf.Lerp(1.0f, maxScale, t / 0.5f);
+                }
+                else
+                {
+                    scale = Mathf.Lerp(maxScale, 1.0f, (t - 0.5f) / 0.5f);
+                }
+                cell.style.scale = new Scale(new Vector3(scale, scale, 1f));
+                yield return null;
+            }
+
+            cell.style.scale = new Scale(Vector3.one);
         }
     }
 }
