@@ -4,7 +4,7 @@
  
     <ui:VisualElement name="title-screen" class="screen">
         <ui:VisualElement class="title-content">
-            <ui:Label text="ChillBlocks" class="title-logo-main text-outline" />
+            <ui:VisualElement class="title-logo-image" />
             <ui:Label text="LO-FI BLOCK PUZZLE" class="title-logo-sub text-outline" />
         </ui:VisualElement>
  

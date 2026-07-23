@@ -1,12 +1,19 @@
+#title-screen {
+    background-image: url("project://database/Assets/Textures/bg_title_lofi.jpg");
+    -unity-background-scale-mode: scale-and-crop;
+}
+
 .title-content {
     align-items: center;
     margin-bottom: var(--sp-2xl);
+    width: 100%;
 }
 
-.title-logo-main {
-    font-size: 96px;
-    color: var(--color-text);
-    -unity-font-style: bold;
+.title-logo-image {
+    width: 600px;
+    height: 400px;
+    background-image: url("project://database/Assets/Textures/logo_title.png");
+    -unity-background-scale-mode: scale-to-fit;
 }
 
 .title-logo-sub {

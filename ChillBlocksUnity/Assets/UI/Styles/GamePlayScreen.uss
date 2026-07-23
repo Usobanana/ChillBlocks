@@ -1,3 +1,8 @@
+#gameplay-screen {
+    background-image: url("project://database/Assets/Textures/bg_gameplay_lofi.jpg");
+    -unity-background-scale-mode: scale-and-crop;
+}
+
 .hud-top {
     position: absolute;
     top: 40px;
