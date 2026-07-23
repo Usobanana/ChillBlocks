@@ -306,5 +306,97 @@ namespace ChillBlocks.UI
             float tt = t - 1f;
             return tt * tt * ((overshoot + 1f) * tt + overshoot) + 1f;
         }
+
+        public void PlayGameOverAnimation(Action onComplete)
+        {
+            if (_host != null)
+            {
+                _host.StartCoroutine(GameOverFlashRoutine(onComplete));
+            }
+            else
+            {
+                onComplete?.Invoke();
+            }
+        }
+
+        private IEnumerator GameOverFlashRoutine(Action onComplete)
+        {
+            // 埋まっているマスの元の色を保存
+            Color[,] originalColors = new Color[BoardState.Size, BoardState.Size];
+            bool[,] isFilled = new bool[BoardState.Size, BoardState.Size];
+            
+            for (int r = 0; r < BoardState.Size; r++)
+            {
+                for (int c = 0; c < BoardState.Size; c++)
+                {
+                    var cell = _cells[r, c];
+                    isFilled[r, c] = cell.ClassListContains("board-cell-filled");
+                    if (isFilled[r, c])
+                    {
+                        originalColors[r, c] = cell.style.backgroundColor.value;
+                    }
+                }
+            }
+
+            // 危険警告の赤色 (#FF7D7D)
+            Color dangerColor = new Color32(255, 125, 125, 255);
+            
+            // 3回点滅させる
+            for (int flash = 0; flash < 3; flash++)
+            {
+                // 赤へフェード
+                float elapsed = 0f;
+                float duration = 0.2f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    for (int r = 0; r < BoardState.Size; r++)
+                    {
+                        for (int c = 0; c < BoardState.Size; c++)
+                        {
+                            if (isFilled[r, c])
+                            {
+                                _cells[r, c].style.backgroundColor = Color.Lerp(originalColors[r, c], dangerColor, t);
+                            }
+                        }
+                    }
+                    yield return null;
+                }
+
+                // 元の色へフェード
+                elapsed = 0f;
+                while (elapsed < duration)
+                {
+                    elapsed += Time.deltaTime;
+                    float t = Mathf.Clamp01(elapsed / duration);
+                    for (int r = 0; r < BoardState.Size; r++)
+                    {
+                        for (int c = 0; c < BoardState.Size; c++)
+                        {
+                            if (isFilled[r, c])
+                            {
+                                _cells[r, c].style.backgroundColor = Color.Lerp(dangerColor, originalColors[r, c], t);
+                            }
+                        }
+                    }
+                    yield return null;
+                }
+            }
+
+            // 最後に元の色に戻しておく
+            for (int r = 0; r < BoardState.Size; r++)
+            {
+                for (int c = 0; c < BoardState.Size; c++)
+                {
+                    if (isFilled[r, c])
+                    {
+                        _cells[r, c].style.backgroundColor = originalColors[r, c];
+                    }
+                }
+            }
+
+            onComplete?.Invoke();
+        }
     }
 }

@@ -79,12 +79,24 @@ namespace ChillBlocks.UI
 
             _gameManager.OnGameOver.AddListener(() =>
             {
-                // ゲームオーバー時は即時にGameOverPresentation画面に移行するのではなく、
-                // まず全画面広告の再生フローに割り込む。
-                _adManager.ShowInterstitial(() =>
+                // ゲームオーバー時は即時に広告移行せず、まず盤面上でGameOver演出を再生
+                if (_boardView != null)
                 {
-                    ShowGameOver();
-                });
+                    _boardView.PlayGameOverAnimation(() =>
+                    {
+                        _adManager.ShowInterstitial(() =>
+                        {
+                            ShowGameOver();
+                        });
+                    });
+                }
+                else
+                {
+                    _adManager.ShowInterstitial(() =>
+                    {
+                        ShowGameOver();
+                    });
+                }
             });
 
             _adManager.ShowBanner();
@@ -219,7 +231,7 @@ namespace ChillBlocks.UI
             if (_boardView == null) return;
 
             _boardView.Refresh(_gameManager.Board);
-            _trayView.Build(_gameManager.Hand, _gameManager.IsHandSlotUsed);
+            _trayView.Build(_gameManager.Hand, _gameManager.IsHandSlotUsed, _gameManager.IsPiecePlaceable);
             _displayedScore = _gameManager.Score;
             if (_scoreAnimRoutine != null) { StopCoroutine(_scoreAnimRoutine); _scoreAnimRoutine = null; }
             _scoreLabel.text = $"Score {_displayedScore}";
@@ -279,7 +291,7 @@ namespace ChillBlocks.UI
         private void HandleHandRefilled()
         {
             if (_currentScreen != Screen.GamePlay || _trayView == null) return;
-            _trayView.Build(_gameManager.Hand, _gameManager.IsHandSlotUsed);
+            _trayView.Build(_gameManager.Hand, _gameManager.IsHandSlotUsed, _gameManager.IsPiecePlaceable);
         }
 
         private void HandleLinesCleared(int lines)

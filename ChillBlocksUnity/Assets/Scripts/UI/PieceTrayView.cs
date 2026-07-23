@@ -34,7 +34,7 @@ namespace ChillBlocks.UI
             _dragLayer = dragLayer;
         }
 
-        public void Build(PieceDefinitions.Definition[] hand, Func<int, bool> isUsed)
+        public void Build(PieceDefinitions.Definition[] hand, Func<int, bool> isUsed, Func<int, bool> isPlaceable)
         {
             _hand = hand;
             _container.Clear();
@@ -43,15 +43,17 @@ namespace ChillBlocks.UI
             {
                 int handIndex = i;
                 bool used = isUsed(handIndex);
+                bool unplaceable = !used && !isPlaceable(handIndex);
 
                 var slot = new VisualElement();
                 slot.AddToClassList("tray-slot");
                 slot.EnableInClassList("tray-slot-used", used);
+                slot.EnableInClassList("tray-slot-unplaceable", unplaceable);
                 slot.pickingMode = used ? PickingMode.Ignore : PickingMode.Position;
-                slot.Add(BuildPieceElement(hand[handIndex], PieceVisual.TrayCellSize));
 
                 if (!used)
                 {
+                    slot.Add(BuildPieceElement(hand[handIndex], PieceVisual.TrayCellSize));
                     slot.RegisterCallback<PointerDownEvent>(evt => OnPointerDown(evt, handIndex, slot));
                     slot.RegisterCallback<PointerMoveEvent>(evt => OnPointerMove(evt, handIndex));
                     slot.RegisterCallback<PointerUpEvent>(evt => OnPointerUp(evt, handIndex, slot));

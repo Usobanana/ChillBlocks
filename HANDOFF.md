@@ -350,4 +350,117 @@ Unityに誤認識されている状態でした。おそらく同名ファイル
 - 透過処理ロジックを改善（閾値を min=20, max=80 に広げて境界の補間をスムーズに設定）し、PowerShellスクリプトを用いて `logo_title.png` のアルファチャンネル透過を再処理。サンプリング結果より背景ピクセルが正しく透過 (Alpha=0) されていることを確認済みです。
 - **メタファイルの直接書き換えによる自動スライス修正**: Unityのキャッシュにより自動削除後に再生成されたメタファイルに再びスライスデータが引き継がれてしまっていたため、`logo_title.png.meta` を直接YAMLエディット。`spriteMode: 1` (Single) に強制指定し、スライス配列 `sprites` やスライスID一覧をすべて空にクリーニングしました。
 
+## 2026-07-23 — ロゴ修正の再検証 & QAチェック項目の拡充（Claude Code → Antigravity）
+
+### 再検証結果
+
+コミット `2d40d96` の公開ビルドをPlaywrightで再確認しました。**タイトルロゴは正しく表示・透過されています**。この件はクローズです。
+
+### QAチェック項目を拡充
+
+「ビルドを確認してみて」の際にClaude Codeが見る観点を増やしました。`qa/webgl-check.js`
+（Playwrightスクリプト、リポジトリに追加済み）を実行すると、公開URL（または引数で
+指定したURL）に対して以下を自動チェックします。
+
+1. **コンソールエラー/読み込み失敗の検出**: JSエラー・アセット404・HTTPエラーレスポンスを収集
+2. **画面遷移の一通り自動巡回**: Title → Settings開閉 → Play → GamePlay をスクリーンショット
+3. **複数アスペクト比でのTitle画面レイアウト確認**: 標準(480×854)に加え、縦長(400×900)・
+   横幅ゆとり(500×760)の3パターンでレイアウト崩れがないか確認
+
+実行方法: `node qa/webgl-check.js [URL]`（Playwright未インストールなら`npx playwright install chromium`が別途必要）。
+出力は `qa/output/<timestamp>/` にスクリーンショットと `issues.json`（検出した問題一覧）。
+
+今回2d40d96に対して実行した結果、**issues 0件**、3アスペクト比ともレターボックスは正常
+（黒帯が出るのは仕様通り）、Settingsダイアログのブロック意匠ボタンも問題ありませんでした。
+
+### ボタンサイズの適正判定（参考値、コードベースでチェック可能）
+
+`Assets/UI/DefaultPanelSettings.asset` の参照解像度1080×1920・参照DPI96から逆算すると:
+
+- `.btn`（min-height 58px）: 約15.3mm相当
+- `.btn-sm`（min-height 46px、Settings開くボタン等）: 約12.2mm相当
+- `.btn-icon`（56px四方）: 約14.8mm相当
+
+iOS/Androidのタップ領域推奨最小値（44pt/48dp、約7〜9mm）に対して現状十分余裕があります。
+`Common.uss`の数値を変更した際は、この計算式（px ÷ 96 × 25.4mm）で目安を確認できます。
+
+### 今後の運用
+
+このスクリプトはNode.js環境があればAntigravity側でも実行可能です。もし変更後に
+自分で軽く確認したい場合は `node qa/webgl-check.js` を使ってもらって構いません
+（Claude Codeによる最終確認は引き続き「ビルドを確認してみて」の依頼時のみ実施）。
+
+## 2026-07-23 — GamePlay仕様変更2件（Claude Code → Antigravity）
+
+ユーザーから2件の仕様変更依頼があり、`documents/design-spec.html` は該当箇所
+（GS0のGamePlay画面 要素と挙動、02a Game Over、GS1 ピーストレイ節）を更新済みです。
+実装をお願いします。
+
+### 1. ピーストレイの表示ルール変更
+
+対象: `Assets/Scripts/UI/PieceTrayView.cs`
+
+現状の `Build()` は、使用済みピース（`isUsed`）も含めて全スロットに
+`BuildPieceElement()` でピース形状を描画し、CSS側 `tray-slot-used`（opacity: 0.15）で
+薄く表示しているだけです（`Assets/UI/Styles/GamePlayScreen.uss` 参照）。
+
+**変更点**:
+
+1. **使用済みピースは非表示に**: `used == true` のスロットには `BuildPieceElement()` を
+   呼ばない（スロット自体は同じ固定サイズを維持し、中身だけ空にする。スロットサイズを
+   変えると3スロットの並びがズレる問題が過去にあったため、枠は残すこと）。
+2. **現在の盤面状態でどこにも置けないピースは暗転表示**: `used == false` だが
+   `Board.HasAnyValidPlacement(hand[handIndex])` が `false` のスロットに、新しいCSSクラス
+   （例: `tray-slot-unplaceable`）を追加し、暗転（半透明化やグレースケール寄りの色）にする。
+   ドラッグ中の当該セルの赤ハイライト（`board-cell-preview-ok`等、既存の別機能）とは別物で、
+   **ドラッグする前の常時表示**であることに注意。
+   - ピースはドラッグ自体は引き続き可能（掴んでみて赤ハイライトで気づく、という体験は
+     残してよい）。暗転はあくまで事前の視覚的ヒント。
+   - `GameManager` に配置可否判定を公開するメソッドが無いため、`CheckGameOver()`
+     （`Assets/Scripts/Core/GameManager.cs` 126行目付近）が内部で使っている
+     `Board.HasAnyValidPlacement(Hand[i])` と同じロジックを、`PieceTrayView.Build()` の
+     呼び出し元（`ScreenManager`）から渡せる形で公開してください（例:
+     `GameManager.IsPlaceable(int handIndex)` を新設し、`Build()` の `isUsed` と同様に
+     `Func<int, bool> isPlaceable` を渡す）。
+   - 盤面状態はピースを置くたびに変わるため、**トレイの再描画（`Build()`呼び出し）のたびに
+     再判定**されるようにしてください（既存のBuild呼び出しタイミングに乗せればOK）。
+
+### 2. GameOver時に盤面演出を挟んでから遷移
+
+対象: `Assets/Scripts/UI/ScreenManager.cs`（80〜88行目）, `Assets/Scripts/UI/BoardView.cs`
+
+現状、`GameManager.OnGameOver` が発火すると `ScreenManager` は即座に
+`_adManager.ShowInterstitial(() => ShowGameOver())` を呼び、間髪入れずに広告→GameOver画面へ
+遷移します。トレイが補充された瞬間に何も見えないままGameOverになり、プレイヤーが
+理由を理解できないという課題があります。
+
+**変更点**: `OnGameOver`発火時、**まず盤面上でGameOver演出（詰みを示す短いアニメーション）を
+再生し、それが終わってから** 既存の `_adManager.ShowInterstitial(...)` を呼ぶようにする。
+
+- `BoardView.cs` には既に `ClearCellRoutine` / `PlaceCellBounceRoutine` / `ScalePopRoutine` /
+  `ScaleFadeOutRoutine` などコルーチンベースの盤面アニメーション基盤があるので、同じパターンで
+  `PlayGameOverRoutine(Action onComplete)` のようなメソッドを追加するのが自然だと思います。
+- 演出の見た目（全マスを赤く点滅させる、順番にシェイクする等）はお任せします。「盤面が
+  埋まって詰んだ」ことが伝わる、1〜2秒程度の短い演出であれば十分です。
+- `ScreenManager.cs` 80〜88行目の `OnGameOver.AddListener` を、演出再生→完了コールバックで
+  `ShowInterstitial` を呼ぶ形に書き換えてください。
+
+両方とも見た目の細部（暗転の強さ、演出の具体的なアニメーション）はAntigravityの判断で
+問題ありません。実装できたら、いつも通りHANDOFF.mdに追記してください。
+
+## 2026-07-23 — GamePlay仕様変更2件の実装完了（Antigravity）
+
+仕様変更2件（トレイの表示ルール変更、ゲームオーバー時の盤面演出）の実装を完了しました。
+
+### 実装内容
+
+1. **ピーストレイの表示ルール変更**:
+   - `GameManager.cs` に `IsPiecePlaceable(int handIndex)` メソッドを新規追加し、指定スロットのピースが現在の盤面に置けるかどうかの判定ロジックを公開。
+   - `PieceTrayView.cs` の `Build` メソッドを拡張し、使用済み（`used`）スロットには `BuildPieceElement` を呼ばず空欄枠にするように修正。また、置けないピースがあるスロットに `.tray-slot-unplaceable` クラスを付与。
+   - `GamePlayScreen.uss` に `.tray-slot-unplaceable` を追加し、`opacity: 0.45` を定義して視覚的に暗転表示させました。
+   - `ScreenManager.cs` の UI 更新（`RefreshGamePlayUI` / `HandleHandRefilled`）における `Build` 呼び出しに判定コールバックを追加し、盤面の変化に合わせてトレイの暗転状態が常時更新されるようにしました。
+
+2. **GameOver時の盤面赤点滅演出の追加**:
+   - `BoardView.cs` に `PlayGameOverAnimation(Action onComplete)` およびコルーチン `GameOverFlashRoutine` を実装。盤面の埋まっている全ブロックが危険警告色（赤 `#FF7D7D`）に脈動点滅（3回、計1.2秒）する演出を定義しました。
+   - `ScreenManager.cs` の `OnGameOver` イベントリスナーを修正し、演出再生が完了した後のコールバック内で全画面広告（`ShowInterstitial`）を呼び出し、ゲームオーバー画面へ遷移するように変更しました。
 

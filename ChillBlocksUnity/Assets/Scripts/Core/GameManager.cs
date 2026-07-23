@@ -123,6 +123,16 @@ namespace ChillBlocks.Core
             return true;
         }
 
+        /// <summary>
+        /// 指定された手持ちのスロットのピースが現在の盤面に配置可能か判定します。
+        /// </summary>
+        public bool IsPiecePlaceable(int handIndex)
+        {
+            if (Hand == null || handIndex < 0 || handIndex >= Hand.Length) return false;
+            if (_handUsed[handIndex]) return false;
+            return Board.HasAnyValidPlacement(Hand[handIndex]);
+        }
+
         private void CheckGameOver()
         {
             for (int i = 0; i < Hand.Length; i++)

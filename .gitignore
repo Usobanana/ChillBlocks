@@ -51,6 +51,10 @@ sysinfo.txt
 *.apk
 *.unitypackage
 
+# QA screenshot check output
+/qa/output/
+/qa/node_modules/
+
 # OS generated files
 .DS_Store
 .DS_Store?
