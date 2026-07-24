@@ -32,6 +32,9 @@ namespace ChillBlocks.UI
         {
             _container = container;
             _dragLayer = dragLayer;
+
+            // 警告ラベルの明滅・脈動アニメーションタスクを登録 (30msごとに更新)
+            _container.schedule.Execute(UpdateWarningAnimations).Every(30);
         }
 
         public void Build(PieceDefinitions.Definition[] hand, Func<int, bool> isUsed, Func<int, bool> isPlaceable)
@@ -153,6 +156,23 @@ namespace ChillBlocks.UI
         {
             _ghost?.RemoveFromHierarchy();
             _ghost = null;
+        }
+
+        private void UpdateWarningAnimations()
+        {
+            // 時間に基づいてサイン波で0〜1の往復値を計算 (周期1.2秒)
+            float period = 1.2f;
+            float t = (Mathf.Sin(Time.time * Mathf.PI * 2 / period) + 1f) / 2f;
+            
+            float opacity = Mathf.Lerp(0.75f, 1.0f, t);
+            float scale = Mathf.Lerp(0.95f, 1.05f, t);
+            
+            // 現在画面に存在するすべての警告ラベルに対して適用
+            _container.Query<Label>(className: "tray-slot-warning").ForEach(label =>
+            {
+                label.style.opacity = opacity;
+                label.style.scale = new Scale(new Vector3(scale, scale, 1f));
+            });
         }
     }
 }

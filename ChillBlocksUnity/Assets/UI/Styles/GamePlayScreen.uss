@@ -139,24 +139,6 @@
     border-radius: 6px;
     border-width: 2px;
     border-color: var(--color-danger);
-    
-    /* ゆっくりとした明滅・脈動アニメーション */
-    animation-name: warning-pulse;
-    animation-duration: 1.2s;
-    animation-iteration-count: infinite;
-    animation-direction: alternate;
-    animation-timing-function: ease-in-out;
-}
-
-@keyframes warning-pulse {
-    from {
-        opacity: 0.75;
-        scale: 0.95;
-    }
-    to {
-        opacity: 1.0;
-        scale: 1.05;
-    }
 }
 
 .piece-cell-filled {
